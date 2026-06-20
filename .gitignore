@@ -1,0 +1,39 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+backend/.env
+backend/.env.*
+!backend/.env.example
+!.env.example
+
+# Build outputs
+bin/
+dist/
+build/
+tmp/
+
+# Go
+*.exe
+*.test
+*.out
+
+# Backend-specific
+backend/tmp/
+backend/bin/
+backend/*.exe
+backend/*.test
+backend/*.out
+backend/.air/
+
+# Docker / local overrides
+docker-compose.override.yml
