@@ -10,6 +10,10 @@ import (
 	userrepo "backend/internal/modules/user/repository"
 	userroutes "backend/internal/modules/user/routes"
 	usersvc "backend/internal/modules/user/service"
+	violationhandler "backend/internal/modules/violation/handler"
+	violationrepo "backend/internal/modules/violation/repository"
+	violationroutes "backend/internal/modules/violation/routes"
+	violationsvc "backend/internal/modules/violation/service"
 	"backend/pkg/response"
 
 	"gorm.io/gorm"
@@ -24,6 +28,21 @@ func Register(router *gin.Engine, db *gorm.DB, jwtSecret string) {
 	userService := usersvc.NewService(userRepository)
 	userHandler := handler.NewHandler(userService)
 	userroutes.Register(v1, userHandler, jwtSecret)
+
+	violationRepository := violationrepo.NewRepository(db)
+	violationService := violationsvc.NewService(violationRepository)
+	violationHandler := violationhandler.NewHandler(violationService)
+	violationroutes.Register(v1, violationHandler, jwtSecret)
+
+	fineRuleVersionRepository := violationrepo.NewFineRuleVersionRepository(db)
+	fineRuleVersionService := violationsvc.NewFineRuleVersionService(fineRuleVersionRepository)
+	fineRuleVersionHandler := violationhandler.NewFineRuleVersionHandler(fineRuleVersionService)
+	violationroutes.RegisterFineRuleVersion(v1, fineRuleVersionHandler, jwtSecret)
+
+	fineRuleDetailRepository := violationrepo.NewFineRuleDetailRepository(db)
+	fineRuleDetailService := violationsvc.NewFineRuleDetailService(fineRuleDetailRepository)
+	fineRuleDetailHandler := violationhandler.NewFineRuleDetailHandler(fineRuleDetailService)
+	violationroutes.RegisterFineRuleDetail(v1, fineRuleDetailHandler, jwtSecret)
 
 	authService := authsvc.NewService(userRepository, jwtSecret)
 	authHandler := authhandler.NewHandler(authService)

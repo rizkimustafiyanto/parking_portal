@@ -48,7 +48,7 @@ func Seed(db *gorm.DB, cfg *config.Config) error {
 		return err
 	}
 
-	return nil
+	return seedViolationData(db, &user)
 }
 
 func gormModelBase() commonmodel.BaseModel {

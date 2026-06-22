@@ -13,3 +13,10 @@ type BaseModel struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
+
+type BaseModel2 struct {
+	ID uint `gorm:"type:uint;primaryKey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+}
