@@ -3,10 +3,10 @@ package dto
 import "backend/pkg/pagination"
 
 type PaginationDTO struct {
-	Page    int    `json:"page"`
-	Limit   int    `json:"limit"`
-	SortBy  string `json:"sortBy"`
-	OrderBy string `json:"orderBy"`
+	Page    int    `form:"page" json:"page"`
+	Limit   int    `form:"limit" json:"limit"`
+	SortBy  string `form:"sortBy" json:"sortBy"`
+	OrderBy string `form:"orderBy" json:"orderBy"`
 }
 
 func (p *PaginationDTO) Normalize() {
