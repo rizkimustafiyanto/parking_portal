@@ -13,8 +13,8 @@ func Register(router *gin.RouterGroup, h *handler.Handler, jwtSecret string) {
 	{
 		violations.GET("", h.GetAll)
 		violations.GET("/:id", h.GetByID)
-		violations.POST("", middleware.Role("admin"), h.Create)
-		violations.PUT("/:id", middleware.Role("admin"), h.Update)
-		violations.DELETE("/:id", middleware.Role("admin"), h.Delete)
+		violations.POST("", middleware.Role("officer"), h.Create)
+		violations.PUT("/:id", middleware.Role("officer"), h.Update)
+		violations.DELETE("/:id", middleware.Role("officer"), h.Delete)
 	}
 }

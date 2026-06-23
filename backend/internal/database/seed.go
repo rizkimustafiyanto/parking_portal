@@ -28,7 +28,7 @@ func Seed(db *gorm.DB, cfg *config.Config) error {
 
 	role := strings.TrimSpace(cfg.SeedAdminRole)
 	if role == "" {
-		role = "admin"
+		role = "officer"
 	}
 
 	hashedPassword, err := password.Hash(cfg.SeedAdminPassword)

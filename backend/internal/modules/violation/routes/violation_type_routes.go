@@ -13,8 +13,8 @@ func RegisterViolationType(router *gin.RouterGroup, h *handler.ViolationTypeHand
 	{
 		group.GET("", h.GetAll)
 		group.GET("/:id", h.GetByID)
-		group.POST("", middleware.Role("admin"), h.Create)
-		group.PUT("/:id", middleware.Role("admin"), h.Update)
-		group.DELETE("/:id", middleware.Role("admin"), h.Delete)
+		group.POST("", middleware.Role("officer"), h.Create)
+		group.PUT("/:id", middleware.Role("officer"), h.Update)
+		group.DELETE("/:id", middleware.Role("officer"), h.Delete)
 	}
 }

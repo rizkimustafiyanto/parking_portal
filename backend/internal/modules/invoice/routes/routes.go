@@ -13,9 +13,9 @@ func Register(router *gin.RouterGroup, h *handler.Handler, jwtSecret string) {
 	{
 		invoice.GET("", h.GetAll)
 		invoice.GET("/:id", h.GetByID)
-		invoice.POST("", middleware.Role("admin"), h.Create)
-		invoice.PUT("/:id", middleware.Role("admin"), h.Update)
-		invoice.DELETE("/:id", middleware.Role("admin"), h.Delete)
+		invoice.POST("", middleware.Role("officer"), h.Create)
+		invoice.PUT("/:id", middleware.Role("officer"), h.Update)
+		invoice.DELETE("/:id", middleware.Role("officer"), h.Delete)
 	}
 
 	invoices := router.Group("/invoices")

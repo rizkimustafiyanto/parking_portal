@@ -51,7 +51,7 @@ func Load() (*Config, error) {
 	viper.SetDefault("SEED_ADMIN_NAME", "Administrator")
 	viper.SetDefault("SEED_ADMIN_EMAIL", "admin@example.com")
 	viper.SetDefault("SEED_ADMIN_PASSWORD", "password123")
-	viper.SetDefault("SEED_ADMIN_ROLE", "admin")
+	viper.SetDefault("SEED_ADMIN_ROLE", "officer")
 
 	viper.SetConfigFile(".env")
 

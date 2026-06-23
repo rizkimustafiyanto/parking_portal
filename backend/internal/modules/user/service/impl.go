@@ -30,7 +30,7 @@ func (s *service) Create(req dto.CreateUserRequest) error {
 
 	role := strings.TrimSpace(req.Role)
 	if role == "" {
-		role = "user"
+		role = "member"
 	}
 
 	user := usermodel.User{
