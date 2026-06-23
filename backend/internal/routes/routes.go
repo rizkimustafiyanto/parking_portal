@@ -6,14 +6,27 @@ import (
 	authhandler "backend/internal/modules/auth/handler"
 	authroutes "backend/internal/modules/auth/routes"
 	authsvc "backend/internal/modules/auth/service"
+
 	"backend/internal/modules/user/handler"
 	userrepo "backend/internal/modules/user/repository"
 	userroutes "backend/internal/modules/user/routes"
 	usersvc "backend/internal/modules/user/service"
+
 	violationhandler "backend/internal/modules/violation/handler"
 	violationrepo "backend/internal/modules/violation/repository"
 	violationroutes "backend/internal/modules/violation/routes"
 	violationsvc "backend/internal/modules/violation/service"
+
+	invoicehandler "backend/internal/modules/invoice/handler"
+	invoicerepo "backend/internal/modules/invoice/repository"
+	invoiceroutes "backend/internal/modules/invoice/routes"
+	invoicesvc "backend/internal/modules/invoice/service"
+
+	paymentshandler "backend/internal/modules/payment-transaction/handler"
+	paymentsrepo "backend/internal/modules/payment-transaction/repository"
+	paymentsroutes "backend/internal/modules/payment-transaction/routes"
+	paymentssvc "backend/internal/modules/payment-transaction/service"
+
 	"backend/pkg/response"
 
 	"gorm.io/gorm"
@@ -43,6 +56,16 @@ func Register(router *gin.Engine, db *gorm.DB, jwtSecret string) {
 	fineRuleDetailService := violationsvc.NewFineRuleDetailService(fineRuleDetailRepository)
 	fineRuleDetailHandler := violationhandler.NewFineRuleDetailHandler(fineRuleDetailService)
 	violationroutes.RegisterFineRuleDetail(v1, fineRuleDetailHandler, jwtSecret)
+
+	invoiceRepository := invoicerepo.NewRepository(db)
+	invoiceService := invoicesvc.NewService(invoiceRepository)
+	invoiceHandler := invoicehandler.NewHandler(invoiceService)
+	invoiceroutes.Register(v1, invoiceHandler, jwtSecret)
+
+	paymentsRepo := paymentsrepo.NewRepository(db)
+	paymentsService := paymentssvc.NewService(paymentsRepo)
+	paymentsHandler := paymentshandler.NewHandler(paymentsService)
+	paymentsroutes.Register(v1, paymentsHandler, jwtSecret)
 
 	authService := authsvc.NewService(userRepository, jwtSecret)
 	authHandler := authhandler.NewHandler(authService)

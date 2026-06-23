@@ -39,3 +39,8 @@ type UserThrow struct {
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 }
+
+type UserThrow2 struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+}
