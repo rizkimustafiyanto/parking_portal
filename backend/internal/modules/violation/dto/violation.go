@@ -14,7 +14,7 @@ type CreateViolationRequest struct {
 	OccurredAt        time.Time `json:"occurred_at" validate:"required"`
 	PhotoURL          string    `json:"photo_url"`
 	OfficerID         uuid.UUID `json:"officer_id" validate:"required"`
-	FineRuleVersionID uuid.UUID `json:"fine_rule_version_id" validate:"required"`
+	FineRuleVersionID uuid.UUID `json:"fine_rule_version_id"`
 }
 
 type UpdateViolationRequest struct {

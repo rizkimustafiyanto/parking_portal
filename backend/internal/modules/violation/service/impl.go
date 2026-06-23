@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	dbmodel "backend/internal/common/model"
 	userdto "backend/internal/modules/user/dto"
 	"backend/internal/modules/violation/dto"
@@ -20,6 +21,15 @@ func NewService(repo repository.Repository) Service {
 }
 
 func (s *service) Create(req dto.CreateViolationRequest) error {
+	fineRuleVersionID := req.FineRuleVersionID
+	if fineRuleVersionID == uuid.Nil {
+		activeVersion, err := s.resolveActiveFineRuleVersion()
+		if err != nil {
+			return err
+		}
+		fineRuleVersionID = activeVersion.ID
+	}
+
 	violation := model.Violation{
 		BaseModel: dbmodel.BaseModel{
 			ID: uuid.New(),
@@ -29,7 +39,7 @@ func (s *service) Create(req dto.CreateViolationRequest) error {
 		OccurredAt:        req.OccurredAt,
 		PhotoURL:          req.PhotoURL,
 		OfficerID:         req.OfficerID,
-		FineRuleVersionID: req.FineRuleVersionID,
+		FineRuleVersionID: fineRuleVersionID,
 	}
 
 	return s.repo.Create(&violation)
@@ -112,4 +122,18 @@ func toResponse(violation *model.Violation) *dto.ViolationResponse {
 		CreatedAt: violation.CreatedAt,
 		UpdatedAt: violation.UpdatedAt,
 	}
+}
+
+func (s *service) resolveActiveFineRuleVersion() (*model.FineRuleVersion, error) {
+	version, err := s.repo.FindActiveFineRuleVersion()
+	if err == nil {
+		return version, nil
+	}
+
+	latest, latestErr := s.repo.FindLatestFineRuleVersion()
+	if latestErr == nil {
+		return latest, nil
+	}
+
+	return nil, fmt.Errorf("no active fine rule version available")
 }

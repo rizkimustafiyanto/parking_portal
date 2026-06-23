@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"backend/internal/modules/violation/dto"
 	"backend/internal/modules/violation/service"
@@ -72,6 +73,10 @@ func (h *FineRuleVersionHandler) Update(c *gin.Context) {
 		return
 	}
 	if err := h.service.Update(c.Param("id"), req); err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "immutable") {
+			c.JSON(http.StatusConflict, response.Error(err.Error()))
+			return
+		}
 		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
@@ -80,6 +85,10 @@ func (h *FineRuleVersionHandler) Update(c *gin.Context) {
 
 func (h *FineRuleVersionHandler) Delete(c *gin.Context) {
 	if err := h.service.Delete(c.Param("id")); err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "immutable") {
+			c.JSON(http.StatusConflict, response.Error(err.Error()))
+			return
+		}
 		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}

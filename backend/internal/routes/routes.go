@@ -58,7 +58,8 @@ func Register(router *gin.Engine, db *gorm.DB, jwtSecret string) {
 	violationroutes.RegisterFineRuleDetail(v1, fineRuleDetailHandler, jwtSecret)
 
 	invoiceRepository := invoicerepo.NewRepository(db)
-	invoiceService := invoicesvc.NewService(invoiceRepository)
+	fineCalculator := violationsvc.NewFineCalculationService()
+	invoiceService := invoicesvc.NewService(invoiceRepository, violationRepository, fineCalculator)
 	invoiceHandler := invoicehandler.NewHandler(invoiceService)
 	invoiceroutes.Register(v1, invoiceHandler, jwtSecret)
 

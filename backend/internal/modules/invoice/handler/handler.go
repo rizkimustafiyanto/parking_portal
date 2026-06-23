@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"backend/internal/modules/invoice/dto"
 	"backend/internal/modules/invoice/service"
@@ -28,6 +29,11 @@ func (h *Handler) Create(c *gin.Context) {
 	}
 
 	if err := h.service.Create(req); err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "invalid member_id") ||
+			strings.Contains(strings.ToLower(err.Error()), "fine rule") {
+			c.JSON(http.StatusBadRequest, response.Error(err.Error()))
+			return
+		}
 		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
@@ -77,6 +83,10 @@ func (h *Handler) Update(c *gin.Context) {
 	}
 
 	if err := h.service.Update(c.Param("id"), req); err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "invalid member_id") {
+			c.JSON(http.StatusBadRequest, response.Error(err.Error()))
+			return
+		}
 		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}

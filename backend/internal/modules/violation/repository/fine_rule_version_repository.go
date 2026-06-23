@@ -12,7 +12,10 @@ import (
 type FineRuleVersionRepository interface {
 	Create(version *model.FineRuleVersion) error
 	FindByID(id string) (*model.FineRuleVersion, error)
+	FindActive() (*model.FineRuleVersion, error)
+	FindLatest() (*model.FineRuleVersion, error)
 	FindAll(query pagedto.PaginationDTO, search string) ([]model.FineRuleVersion, int64, error)
+	DeactivateAllActive() error
 	Update(version *model.FineRuleVersion) error
 	Delete(id string) error
 }
@@ -26,7 +29,17 @@ func NewFineRuleVersionRepository(db *gorm.DB) FineRuleVersionRepository {
 }
 
 func (r *fineRuleVersionRepository) Create(version *model.FineRuleVersion) error {
-	return r.db.Create(version).Error
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if version.IsActive {
+			if err := tx.Model(&model.FineRuleVersion{}).
+				Where("is_active = ?", true).
+				Update("is_active", false).Error; err != nil {
+				return err
+			}
+		}
+
+		return tx.Create(version).Error
+	})
 }
 
 func (r *fineRuleVersionRepository) FindByID(id string) (*model.FineRuleVersion, error) {
@@ -36,6 +49,39 @@ func (r *fineRuleVersionRepository) FindByID(id string) (*model.FineRuleVersion,
 		Preload("Publish").
 		Preload("Details").
 		Where("id = ?", id).
+		First(&version).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &version, nil
+}
+
+func (r *fineRuleVersionRepository) FindActive() (*model.FineRuleVersion, error) {
+	var version model.FineRuleVersion
+
+	err := r.db.
+		Preload("Publish").
+		Preload("Details").
+		Where("is_active = ?", true).
+		Order("version_number DESC").
+		First(&version).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &version, nil
+}
+
+func (r *fineRuleVersionRepository) FindLatest() (*model.FineRuleVersion, error) {
+	var version model.FineRuleVersion
+
+	err := r.db.
+		Preload("Publish").
+		Preload("Details").
+		Order("version_number DESC").
 		First(&version).
 		Error
 	if err != nil {
@@ -70,6 +116,14 @@ func (r *fineRuleVersionRepository) FindAll(query pagedto.PaginationDTO, search 
 		Error
 
 	return versions, total, err
+}
+
+func (r *fineRuleVersionRepository) DeactivateAllActive() error {
+	return r.db.
+		Model(&model.FineRuleVersion{}).
+		Where("is_active = ?", true).
+		Update("is_active", false).
+		Error
 }
 
 func (r *fineRuleVersionRepository) Update(version *model.FineRuleVersion) error {

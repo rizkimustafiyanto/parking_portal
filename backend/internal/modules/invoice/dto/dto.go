@@ -12,14 +12,12 @@ import (
 type CreateInvoiceRequest struct {
 	ViolationID uuid.UUID             `json:"violation_id"`
 	MemberID    string                `json:"member_id"`
-	Amount      float64               `json:"amount" validate:"min=0"`
 	Status      pStatus.InvoiceStatus `json:"status"`
 }
 
 type UpdateInvoiceRequest struct {
 	ViolationID *uuid.UUID             `json:"violation_id"`
 	MemberID    *string                `json:"member_id"`
-	Amount      *float64               `json:"amount" validate:"min=0"`
 	Status      *pStatus.InvoiceStatus `json:"status"`
 }
 

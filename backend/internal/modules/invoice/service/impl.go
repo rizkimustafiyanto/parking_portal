@@ -10,6 +10,8 @@ import (
 	"backend/internal/modules/invoice/repository"
 	paymentdto "backend/internal/modules/payment-transaction/dto"
 	paymentModel "backend/internal/modules/payment-transaction/model"
+	violationrepo "backend/internal/modules/violation/repository"
+	violationsvc "backend/internal/modules/violation/service"
 	userdto "backend/internal/modules/user/dto"
 	usermodel "backend/internal/modules/user/model"
 	pagedto "backend/pkg/dto"
@@ -18,20 +20,36 @@ import (
 )
 
 type service struct {
-	repo repository.Repository
+	repo             repository.Repository
+	violationRepo    violationrepo.Repository
+	fineCalculator   violationsvc.FineCalculationService
 }
 
-func NewService(repo repository.Repository) Service {
-	return &service{repo: repo}
+func NewService(repo repository.Repository, violationRepo violationrepo.Repository, fineCalculator violationsvc.FineCalculationService) Service {
+	return &service{
+		repo:           repo,
+		violationRepo:  violationRepo,
+		fineCalculator: fineCalculator,
+	}
 }
 
 func (s *service) Create(req dto.CreateInvoiceRequest) error {
+	violation, err := s.violationRepo.FindByID(req.ViolationID.String())
+	if err != nil {
+		return err
+	}
+
+	amount, err := s.fineCalculator.Calculate(&violation.FineRuleVersion)
+	if err != nil {
+		return err
+	}
+
 	invoice := invoiceModel.Invoice{
 		BaseModel: dbmodel.BaseModel{
 			ID: uuid.New(),
 		},
 		ViolationID: req.ViolationID,
-		Amount:      req.Amount,
+		Amount:      amount,
 		Status:      req.Status,
 	}
 
@@ -85,10 +103,6 @@ func (s *service) Update(id string, req dto.UpdateInvoiceRequest) error {
 			return fmt.Errorf("invalid member_id: %w", err)
 		}
 		invoice.MemberID = parsedMemberID
-	}
-
-	if req.Amount != nil {
-		invoice.Amount = *req.Amount
 	}
 
 	if req.Status != nil && strings.TrimSpace(string(*req.Status)) != "" {

@@ -15,6 +15,8 @@ type Repository interface {
 	FindAll(query pagedto.PaginationDTO, search string) ([]model.Violation, int64, error)
 	Update(violation *model.Violation) error
 	Delete(id string) error
+	FindActiveFineRuleVersion() (*model.FineRuleVersion, error)
+	FindLatestFineRuleVersion() (*model.FineRuleVersion, error)
 }
 
 type repository struct {
@@ -34,7 +36,8 @@ func (r *repository) FindByID(id string) (*model.Violation, error) {
 
 	err := r.db.
 		Preload("Officer").
-		Preload("FineRuleVersion").
+		Preload("FineRuleVersion.Publish").
+		Preload("FineRuleVersion.Details").
 		Where("id = ?", id).
 		First(&violation).
 		Error
@@ -62,7 +65,8 @@ func (r *repository) FindAll(query pagedto.PaginationDTO, search string) ([]mode
 
 	err := db.
 		Preload("Officer").
-		Preload("FineRuleVersion").
+		Preload("FineRuleVersion.Publish").
+		Preload("FineRuleVersion.Details").
 		Order(query.SortBy + " " + query.OrderBy).
 		Offset(query.Offset()).
 		Limit(query.Limit).
@@ -78,4 +82,37 @@ func (r *repository) Update(violation *model.Violation) error {
 
 func (r *repository) Delete(id string) error {
 	return r.db.Delete(&model.Violation{}, "id = ?", id).Error
+}
+
+func (r *repository) FindActiveFineRuleVersion() (*model.FineRuleVersion, error) {
+	var version model.FineRuleVersion
+
+	err := r.db.
+		Preload("Publish").
+		Preload("Details").
+		Where("is_active = ?", true).
+		Order("version_number DESC").
+		First(&version).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &version, nil
+}
+
+func (r *repository) FindLatestFineRuleVersion() (*model.FineRuleVersion, error) {
+	var version model.FineRuleVersion
+
+	err := r.db.
+		Preload("Publish").
+		Preload("Details").
+		Order("version_number DESC").
+		First(&version).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &version, nil
 }

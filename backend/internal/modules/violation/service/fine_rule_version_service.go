@@ -1,6 +1,9 @@
 package service
 
 import (
+	"errors"
+	"fmt"
+
 	dbmodel "backend/internal/common/model"
 	userdto "backend/internal/modules/user/dto"
 	"backend/internal/modules/violation/dto"
@@ -60,22 +63,11 @@ func (s *fineRuleVersionService) GetAll(query pagedto.PaginationDTO, filter dto.
 }
 
 func (s *fineRuleVersionService) Update(id string, req dto.UpdateFineRuleVersionRequest) error {
-	version, err := s.repo.FindByID(id)
-	if err != nil {
-		return err
-	}
-	if req.VersionNumber != 0 {
-		version.VersionNumber = req.VersionNumber
-	}
-	version.IsActive = req.IsActive
-	if req.PublishedBy != uuid.Nil {
-		version.PublishedBy = req.PublishedBy
-	}
-	return s.repo.Update(version)
+	return fmt.Errorf("fine rule version is immutable; create a new version instead")
 }
 
 func (s *fineRuleVersionService) Delete(id string) error {
-	return s.repo.Delete(id)
+	return errors.New("fine rule version is immutable and cannot be deleted")
 }
 
 func toFineRuleVersionResponse(version *model.FineRuleVersion) *dto.FineRuleVersionResponse {
