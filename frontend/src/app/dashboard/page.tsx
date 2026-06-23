@@ -17,7 +17,7 @@ export default function DashboardLandingPage() {
       return
     }
 
-    if (role === "officer") {
+    if (role === "admin" || role === "officer") {
       router.replace("/dashboard/officer")
       return
     }

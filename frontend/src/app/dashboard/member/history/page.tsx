@@ -75,19 +75,19 @@ export default function MemberHistoryPage() {
                   <div>
                     <p className="flex items-center gap-2 font-medium text-slate-950 dark:text-white">
                       <ReceiptTextIcon className="size-4 text-emerald-600" />
-                      {item.violation?.plate_number}
+                      {textOrDash(item.violation?.plate_number)}
                     </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{item.violation?.location}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{textOrDash(item.violation?.location)}</p>
                   </div>
                   <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-900 dark:text-slate-300">
                     {item.status}
                   </span>
                 </div>
                 <div className="mt-3 grid gap-2 text-sm text-slate-600 dark:text-slate-300 md:grid-cols-2">
-                  <p>Amount: {item.amount}</p>
-                  <p>Payment: {item.payment?.status ?? "-"}</p>
+                  <p>Amount: {item.amount ?? "-"}</p>
+                  <p>Payment: {textOrDash(item.payment?.status)}</p>
                   <p>Fine rule version: {item.violation?.fine_rule_version?.version_number ?? "-"}</p>
-                  <p>Created at: {item.created_at}</p>
+                  <p>Created at: {textOrDash(item.created_at)}</p>
                 </div>
               </div>
             ))}
@@ -96,4 +96,12 @@ export default function MemberHistoryPage() {
       </CardContent>
     </Card>
   )
+}
+
+function textOrDash(value: string | number | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "-"
+  }
+
+  return value && value.trim() ? value : "-"
 }

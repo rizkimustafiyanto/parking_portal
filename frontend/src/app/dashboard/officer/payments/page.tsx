@@ -250,12 +250,14 @@ export default function OfficerPaymentsPage() {
                     {items.map((item) => (
                       <tr key={item.id}>
                         <td className="px-3 py-3">
-                          <div className="font-medium">{item.internal_transaction_id}</div>
-                          <div className="text-xs text-slate-500">{item.status} / {item.scenario}</div>
+                          <div className="font-medium">{textOrDash(item.internal_transaction_id)}</div>
+                          <div className="text-xs text-slate-500">
+                            {textOrDash(item.status)} / {textOrDash(item.scenario)}
+                          </div>
                         </td>
-                        <td className="px-3 py-3">{item.invoice_id}</td>
-                        <td className="px-3 py-3">{item.amount}</td>
-                        <td className="px-3 py-3">{item.paid_at}</td>
+                        <td className="px-3 py-3">{textOrDash(item.invoice_id)}</td>
+                        <td className="px-3 py-3">{item.amount ?? "-"}</td>
+                        <td className="px-3 py-3">{textOrDash(item.paid_at)}</td>
                         <td className="px-3 py-3">
                           <div className="flex flex-wrap gap-2">
                             <Button type="button" variant="secondary" size="sm" onClick={() => setSelectedPayment(item)}>
@@ -292,12 +294,12 @@ export default function OfficerPaymentsPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               <DetailBlock label="Payment ID" value={selectedPayment.id} />
-              <DetailBlock label="Invoice ID" value={selectedPayment.invoice_id} />
-              <DetailBlock label="Internal transaction" value={selectedPayment.internal_transaction_id} />
-              <DetailBlock label="Amount" value={String(selectedPayment.amount)} />
-              <DetailBlock label="Status" value={selectedPayment.status} />
-              <DetailBlock label="Scenario" value={selectedPayment.scenario} />
-              <DetailBlock label="Paid at" value={selectedPayment.paid_at} />
+              <DetailBlock label="Invoice ID" value={textOrDash(selectedPayment.invoice_id)} />
+              <DetailBlock label="Internal transaction" value={textOrDash(selectedPayment.internal_transaction_id)} />
+              <DetailBlock label="Amount" value={String(selectedPayment.amount ?? "-")} />
+              <DetailBlock label="Status" value={textOrDash(selectedPayment.status)} />
+              <DetailBlock label="Scenario" value={textOrDash(selectedPayment.scenario)} />
+              <DetailBlock label="Paid at" value={textOrDash(selectedPayment.paid_at)} />
             </div>
           )}
         </CardContent>
@@ -322,4 +324,12 @@ function DetailBlock({ label, value }: { label: string; value: string }) {
       <p className="mt-2 break-words text-sm font-medium text-slate-950 dark:text-white">{value}</p>
     </div>
   )
+}
+
+function textOrDash(value: string | number | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "-"
+  }
+
+  return value && value.trim() ? value : "-"
 }
