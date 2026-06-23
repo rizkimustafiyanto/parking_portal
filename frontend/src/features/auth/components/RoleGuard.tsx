@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { LoadingState } from "@/components/ui/loading-state"
@@ -14,8 +14,11 @@ type RoleGuardProps = {
 
 function RoleGuard({ role, children }: RoleGuardProps) {
   const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
+
     const token = getStoredToken()
     const storedRole = getStoredRole()
 
@@ -33,6 +36,16 @@ function RoleGuard({ role, children }: RoleGuardProps) {
       router.replace(storedRole === "member" ? "/dashboard/member" : "/dashboard/officer")
     }
   }, [role, router])
+
+  if (!isMounted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
+        <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+          <LoadingState rows={3} />
+        </div>
+      </div>
+    )
+  }
 
   const token = getStoredToken()
   const storedRole = getStoredRole()
