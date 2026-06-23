@@ -84,6 +84,22 @@ func (h *Handler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Success("user updated", nil))
 }
 
+func (h *Handler) TopUpBalance(c *gin.Context) {
+	var req dto.TopUpBalanceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.Error(err.Error()))
+		return
+	}
+
+	user, err := h.service.TopUpBalance(c.Param("id"), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success("balance topped up", user))
+}
+
 func (h *Handler) Delete(c *gin.Context) {
 	if err := h.service.Delete(c.Param("id")); err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))

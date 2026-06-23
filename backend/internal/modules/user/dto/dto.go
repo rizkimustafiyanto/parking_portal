@@ -16,6 +16,10 @@ type UpdateUserRequest struct {
 	Role     string `json:"role"`
 }
 
+type TopUpBalanceRequest struct {
+	Amount float64 `json:"amount" validate:"required,min=0.01"`
+}
+
 type ListUserRequest struct {
 	Page   int    `form:"page"`
 	Limit  int    `form:"limit"`
@@ -31,6 +35,7 @@ type UserResponse struct {
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
+	Balance   float64   `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

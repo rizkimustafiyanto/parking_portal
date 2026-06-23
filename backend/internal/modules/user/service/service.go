@@ -12,5 +12,7 @@ type Service interface {
 
 	Update(id string, req dto.UpdateUserRequest) error
 
+	TopUpBalance(id string, req dto.TopUpBalanceRequest) (*dto.UserResponse, error)
+
 	Delete(id string) error
 }

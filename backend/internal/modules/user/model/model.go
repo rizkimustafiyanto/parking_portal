@@ -10,6 +10,7 @@ type User struct {
 	Email    string `gorm:"uniqueIndex;not null"`
 	Password string `gorm:"not null"`
 	Role     string `gorm:"not null"`
+	Balance  float64 `gorm:"not null;default:0"`
 }
 
 func (u User) GetID() string {

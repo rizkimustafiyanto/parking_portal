@@ -1,10 +1,12 @@
 package repository
 
 import (
+	"fmt"
 	"strings"
 
 	"backend/internal/modules/user/model"
 	"backend/pkg/dto"
+	"gorm.io/gorm/clause"
 
 	"gorm.io/gorm"
 )
@@ -19,6 +21,8 @@ type Repository interface {
 	FindAll(query dto.PaginationDTO, search string, role string) ([]model.User, int64, error)
 
 	Update(user *model.User) error
+
+	TopUpBalance(id string, amount float64) (*model.User, error)
 
 	Delete(id string) error
 }
@@ -39,6 +43,33 @@ func (r *repository) Create(user *model.User) error {
 
 func (r *repository) Update(user *model.User) error {
 	return r.db.Save(user).Error
+}
+
+func (r *repository) TopUpBalance(id string, amount float64) (*model.User, error) {
+	if amount <= 0 {
+		return nil, fmt.Errorf("amount must be greater than zero")
+	}
+
+	var updated model.User
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		var user model.User
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(&user).Error; err != nil {
+			return err
+		}
+
+		user.Balance += amount
+		if err := tx.Model(&user).Update("balance", user.Balance).Error; err != nil {
+			return err
+		}
+
+		updated = user
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &updated, nil
 }
 
 func (r *repository) Delete(id string) error {

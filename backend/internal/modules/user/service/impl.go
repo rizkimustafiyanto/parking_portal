@@ -41,6 +41,7 @@ func (s *service) Create(req dto.CreateUserRequest) error {
 		Email:    req.Email,
 		Password: string(hashedPassword),
 		Role:     role,
+		Balance:  0,
 	}
 
 	return s.repo.Create(&user)
@@ -100,6 +101,15 @@ func (s *service) Update(id string, req dto.UpdateUserRequest) error {
 	return s.repo.Update(user)
 }
 
+func (s *service) TopUpBalance(id string, req dto.TopUpBalanceRequest) (*dto.UserResponse, error) {
+	updated, err := s.repo.TopUpBalance(id, req.Amount)
+	if err != nil {
+		return nil, fmt.Errorf("top up balance: %w", err)
+	}
+
+	return toResponse(updated), nil
+}
+
 func (s *service) Delete(id string) error {
 	return s.repo.Delete(id)
 }
@@ -110,6 +120,7 @@ func toResponse(user *usermodel.User) *dto.UserResponse {
 		Name:      user.Name,
 		Email:     user.Email,
 		Role:      user.Role,
+		Balance:   user.Balance,
 		CreatedAt: user.CreatedAt,
 	}
 }

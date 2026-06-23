@@ -1,15 +1,14 @@
 package service
 
 import (
+	"fmt"
 	"strings"
 
-	dbmodel "backend/internal/common/model"
+	paymentconst "backend/internal/modules/payment-transaction/constans"
 	"backend/internal/modules/payment-transaction/dto"
 	paymentModel "backend/internal/modules/payment-transaction/model"
 	"backend/internal/modules/payment-transaction/repository"
 	pagedto "backend/pkg/dto"
-
-	"github.com/google/uuid"
 )
 
 type service struct {
@@ -21,19 +20,18 @@ func NewService(repo repository.Repository) Service {
 }
 
 func (s *service) Create(req dto.CreatePaymentTransactionRequest) error {
-	payments := paymentModel.PaymentTransaction{
-		BaseModel: dbmodel.BaseModel{
-			ID: uuid.New(),
-		},
-		InvoiceID:             req.InvoiceID,
-		InternalTransactionID: req.InternalTransactionID,
-		Amount:                req.Amount,
-		Status:                req.Status,
-		Scenario:              req.Scenario,
-		PaidAt:                req.PaidAt,
+	if req.Status != paymentconst.PaymentSuccess || req.Scenario != paymentconst.ScenarioSuccess {
+		return fmt.Errorf("member balance payment requires SUCCESS status and SUCCESS scenario")
 	}
 
-	return s.repo.Create(&payments)
+	return s.repo.ProcessMemberBalancePayment(
+		req.InvoiceID.String(),
+		req.InternalTransactionID,
+		req.Amount,
+		req.Status,
+		req.Scenario,
+		req.PaidAt,
+	)
 }
 
 func (s *service) GetByID(id string) (*dto.PaymentTransactionResponse, error) {

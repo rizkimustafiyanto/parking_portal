@@ -42,6 +42,7 @@ func Seed(db *gorm.DB, cfg *config.Config) error {
 		Email:     cfg.SeedAdminEmail,
 		Password:  hashedPassword,
 		Role:      role,
+		Balance:   0,
 	}
 
 	if err := db.Create(&user).Error; err != nil {
