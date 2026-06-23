@@ -12,6 +12,7 @@ import (
 type Repository interface {
 	Create(user *model.Invoice) error
 	FindByID(id string) (*model.Invoice, error)
+	FindByMemberID(memberID string) ([]model.Invoice, error)
 	FindAll(query dto.PaginationDTO, search string, status string) ([]model.Invoice, int64, error)
 	Update(user *model.Invoice) error
 	Delete(id string) error
@@ -48,6 +49,9 @@ func (r *repository) FindByID(id string) (*model.Invoice, error) {
 
 	err := r.db.
 		Preload("Member").
+		Preload("Violation.Officer").
+		Preload("Violation.FineRuleVersion.Publish").
+		Preload("Violation.FineRuleVersion.Details").
 		Preload("Payment").
 		Where("id = ?", id).
 		First(&invoice).
@@ -58,6 +62,23 @@ func (r *repository) FindByID(id string) (*model.Invoice, error) {
 	}
 
 	return &invoice, nil
+}
+
+func (r *repository) FindByMemberID(memberID string) ([]model.Invoice, error) {
+	var invoices []model.Invoice
+
+	err := r.db.
+		Preload("Member").
+		Preload("Violation.Officer").
+		Preload("Violation.FineRuleVersion.Publish").
+		Preload("Violation.FineRuleVersion.Details").
+		Preload("Payment").
+		Where("member_id = ?", memberID).
+		Order("created_at DESC").
+		Find(&invoices).
+		Error
+
+	return invoices, err
 }
 
 func (r *repository) FindAll(query dto.PaginationDTO, search string, status string) ([]model.Invoice, int64, error) {
@@ -81,6 +102,9 @@ func (r *repository) FindAll(query dto.PaginationDTO, search string, status stri
 
 	err := db.
 		Preload("Member").
+		Preload("Violation.Officer").
+		Preload("Violation.FineRuleVersion.Publish").
+		Preload("Violation.FineRuleVersion.Details").
 		Preload("Payment").
 		Order(query.SortBy + " " + query.OrderBy).
 		Offset(query.Offset()).

@@ -17,4 +17,17 @@ func Register(router *gin.RouterGroup, h *handler.Handler, jwtSecret string) {
 		invoice.PUT("/:id", middleware.Role("admin"), h.Update)
 		invoice.DELETE("/:id", middleware.Role("admin"), h.Delete)
 	}
+
+	invoices := router.Group("/invoices")
+	invoices.Use(middleware.Auth(jwtSecret))
+	{
+		invoices.GET("/:id/detail", h.GetDetail)
+	}
+
+	members := router.Group("/members")
+	members.Use(middleware.Auth(jwtSecret))
+	{
+		members.GET("/:id/transactions", h.GetMemberTransactions)
+		members.GET("/:id/balance-history", h.GetMemberBalanceHistory)
+	}
 }

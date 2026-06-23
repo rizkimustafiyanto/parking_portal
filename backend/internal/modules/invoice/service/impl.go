@@ -10,6 +10,7 @@ import (
 	"backend/internal/modules/invoice/repository"
 	paymentdto "backend/internal/modules/payment-transaction/dto"
 	paymentModel "backend/internal/modules/payment-transaction/model"
+	violationModel "backend/internal/modules/violation/model"
 	violationrepo "backend/internal/modules/violation/repository"
 	violationsvc "backend/internal/modules/violation/service"
 	userdto "backend/internal/modules/user/dto"
@@ -21,8 +22,8 @@ import (
 
 type service struct {
 	repo             repository.Repository
-	violationRepo    violationrepo.Repository
-	fineCalculator   violationsvc.FineCalculationService
+	violationRepo  violationrepo.Repository
+	fineCalculator violationsvc.FineCalculationService
 }
 
 func NewService(repo repository.Repository, violationRepo violationrepo.Repository, fineCalculator violationsvc.FineCalculationService) Service {
@@ -69,6 +70,20 @@ func (s *service) GetByID(id string) (*dto.InvoiceResponse, error) {
 	}
 
 	return toResponse(invoice), nil
+}
+
+func (s *service) GetByMemberID(memberID string) ([]dto.InvoiceResponse, error) {
+	invoices, err := s.repo.FindByMemberID(memberID)
+	if err != nil {
+		return nil, err
+	}
+
+	responses := make([]dto.InvoiceResponse, 0, len(invoices))
+	for i := range invoices {
+		responses = append(responses, *toResponse(&invoices[i]))
+	}
+
+	return responses, nil
 }
 
 func (s *service) GetAll(query pagedto.PaginationDTO, filter dto.ListInvoiceRequest) ([]dto.InvoiceResponse, int64, error) {
@@ -123,9 +138,38 @@ func toResponse(invoice *invoiceModel.Invoice) *dto.InvoiceResponse {
 		Amount:      invoice.Amount,
 		Status:      invoice.Status,
 		Member:      toUserThrow2(invoice.Member),
+		Violation:   toViolationThrow(invoice.Violation),
 		Payment:     toPaymentThrow(invoice.Payment),
 		CreatedAt:   invoice.CreatedAt,
 		UpdatedAt:   invoice.UpdatedAt,
+	}
+}
+
+func toViolationThrow(violation violationModel.Violation) dto.ViolationHistoryThrow {
+	details := make([]dto.ViolationFineRuleDetailThrow, 0, len(violation.FineRuleVersion.Details))
+	for i := range violation.FineRuleVersion.Details {
+		detail := violation.FineRuleVersion.Details[i]
+		details = append(details, dto.ViolationFineRuleDetailThrow{
+			ID:            detail.ID.String(),
+			RuleType:      detail.RuleType,
+			Key:           detail.Key,
+			Value:         detail.Value,
+			RuleVersionID: detail.RuleVersionID.String(),
+		})
+	}
+
+	return dto.ViolationHistoryThrow{
+		ID:         violation.ID.String(),
+		PlateNumber: violation.PlateNumber,
+		Location:   violation.Location,
+		OccurredAt: violation.OccurredAt,
+		PhotoURL:   violation.PhotoURL,
+		FineRuleVersion: dto.ViolationFineRuleVersionThrow{
+			ID:            violation.FineRuleVersion.ID.String(),
+			VersionNumber: violation.FineRuleVersion.VersionNumber,
+			IsActive:      violation.FineRuleVersion.IsActive,
+			Details:       details,
+		},
 	}
 }
 

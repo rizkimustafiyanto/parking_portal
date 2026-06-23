@@ -9,6 +9,7 @@ type Service interface {
 	Create(req dto.CreateInvoiceRequest) error
 
 	GetByID(id string) (*dto.InvoiceResponse, error)
+	GetByMemberID(memberID string) ([]dto.InvoiceResponse, error)
 
 	GetAll(query pagedto.PaginationDTO, filter dto.ListInvoiceRequest) ([]dto.InvoiceResponse, int64, error)
 

@@ -51,6 +51,36 @@ func (h *Handler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Success("invoice found", invoice))
 }
 
+func (h *Handler) GetDetail(c *gin.Context) {
+	invoice, err := h.service.GetByID(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusNotFound, response.Error(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success("invoice detail found", invoice))
+}
+
+func (h *Handler) GetMemberTransactions(c *gin.Context) {
+	invoices, err := h.service.GetByMemberID(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusNotFound, response.Error(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success("member transactions found", invoices))
+}
+
+func (h *Handler) GetMemberBalanceHistory(c *gin.Context) {
+	invoices, err := h.service.GetByMemberID(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusNotFound, response.Error(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success("member balance history found", invoices))
+}
+
 func (h *Handler) GetAll(c *gin.Context) {
 	var query pagedto.PaginationDTO
 	if err := c.ShouldBindQuery(&query); err != nil {
