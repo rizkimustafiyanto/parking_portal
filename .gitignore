@@ -22,6 +22,19 @@ dist/
 build/
 tmp/
 
+# Postman
+**/postman/
+**/.postman/
+*.postman_collection.json
+*.postman_environment.json
+*.postman_globals.json
+*.postman_history
+*.postman_workspace
+*.postman_variables.json
+
+# ERD Drawio
+.$ERD.drawio**
+
 # Go
 *.exe
 *.test
@@ -30,6 +43,7 @@ tmp/
 # Backend-specific
 backend/tmp/
 backend/bin/
+backend/uploads/**
 backend/*.exe
 backend/*.test
 backend/*.out

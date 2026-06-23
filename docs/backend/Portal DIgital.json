@@ -1,0 +1,1453 @@
+{
+  "info": {
+    "_postman_id": "4e509cb0-daf2-4671-85e3-7a33995c2880",
+    "name": "Portal Digital API",
+    "description": "Complete API collection for Portal Digital - Traffic Violation Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "20885140"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Check whether the API server is running."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticate user and get JWT token"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"OK\",\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"name\": \"Admin User\",\n      \"email\": \"admin@example.com\",\n      \"role\": \"admin\"\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users?page=1&limit=10&sortBy=created_at&order=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "created_at"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "role",
+                  "value": "admin",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all users with pagination. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/550e8400-e29b-41d4-a716-446655440000",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "550e8400-e29b-41d4-a716-446655440000"
+              ]
+            },
+            "description": "Get a specific user by ID. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"securePassword123\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "Create a new user. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\",\n  \"role\": \"officer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/550e8400-e29b-41d4-a716-446655440000",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "550e8400-e29b-41d4-a716-446655440000"
+              ]
+            },
+            "description": "Update an existing user. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Top Up Balance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/550e8400-e29b-41d4-a716-446655440005/top-up-balance",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "550e8400-e29b-41d4-a716-446655440005",
+                "top-up-balance"
+              ]
+            },
+            "description": "Top up member balance. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/550e8400-e29b-41d4-a716-446655440000",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "550e8400-e29b-41d4-a716-446655440000"
+              ]
+            },
+            "description": "Delete a user. Requires authentication and admin role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Violations",
+      "item": [
+        {
+          "name": "Get All Violations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/violations?page=1&limit=10&sortBy=created_at&order=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violations"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "created_at"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all violations with pagination. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Violation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/violations/550e8400-e29b-41d4-a716-446655440001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violations",
+                "550e8400-e29b-41d4-a716-446655440001"
+              ]
+            },
+            "description": "Get a specific violation by ID. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Violation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate_number\": \"B 1234 XYZ\",\n  \"violation_type_code\": \"expired_meter\",\n  \"location\": \"Jalan Sudirman, Jakarta\",\n  \"occurred_at\": \"2024-01-15T10:30:00Z\",\n  \"photo_url\": \"https://example.com/photo.jpg\",\n  \"officer_id\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/violations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violations"
+              ]
+            },
+            "description": "Create a new violation record. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Violation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate_number\": \"B 1234 XYZ\",\n  \"location\": \"Jalan Gatot Subroto, Jakarta\",\n  \"photo_url\": \"https://example.com/photo-updated.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/violations/550e8400-e29b-41d4-a716-446655440001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violations",
+                "550e8400-e29b-41d4-a716-446655440001"
+              ]
+            },
+            "description": "Update an existing violation. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Violation",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/violations/550e8400-e29b-41d4-a716-446655440001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violations",
+                "550e8400-e29b-41d4-a716-446655440001"
+              ]
+            },
+            "description": "Delete a violation record. Requires authentication and admin role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Violation Types",
+      "item": [
+        {
+          "name": "Get All Violation Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/violation-types?page=1&limit=10&sortBy=created_at&order=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violation-types"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "created_at"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all violation types. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Violation Type by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/violation-types/550e8400-e29b-41d4-a716-446655440010",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violation-types",
+                "550e8400-e29b-41d4-a716-446655440010"
+              ]
+            },
+            "description": "Get a specific violation type by ID. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Violation Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"expired_meter\",\n  \"name\": \"Expired Meter\",\n  \"base_amount\": 50000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/violation-types",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violation-types"
+              ]
+            },
+            "description": "Create a violation type. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Violation Type",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Expired Meter - Updated\",\n  \"base_amount\": 55000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/violation-types/550e8400-e29b-41d4-a716-446655440010",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violation-types",
+                "550e8400-e29b-41d4-a716-446655440010"
+              ]
+            },
+            "description": "Update a violation type. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Violation Type",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/violation-types/550e8400-e29b-41d4-a716-446655440010",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "violation-types",
+                "550e8400-e29b-41d4-a716-446655440010"
+              ]
+            },
+            "description": "Delete a violation type. Requires authentication and admin role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Fine Rule Versions",
+      "item": [
+        {
+          "name": "Get All Fine Rule Versions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-versions?page=1&limit=10&sortBy=created_at&order=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-versions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "created_at"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all fine rule versions with pagination. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Fine Rule Version by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-versions/550e8400-e29b-41d4-a716-446655440002",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-versions",
+                "550e8400-e29b-41d4-a716-446655440002"
+              ]
+            },
+            "description": "Get a specific fine rule version by ID. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Fine Rule Version",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version_number\": 1,\n  \"is_active\": true,\n  \"published_by\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-versions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-versions"
+              ]
+            },
+            "description": "Create a new fine rule version. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Fine Rule Version",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version_number\": 2,\n  \"is_active\": false,\n  \"published_by\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-versions/550e8400-e29b-41d4-a716-446655440002",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-versions",
+                "550e8400-e29b-41d4-a716-446655440002"
+              ]
+            },
+            "description": "Fine rule versions are immutable; this endpoint exists in the API but currently returns an immutable error."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Fine Rule Version",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-versions/550e8400-e29b-41d4-a716-446655440002",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-versions",
+                "550e8400-e29b-41d4-a716-446655440002"
+              ]
+            },
+            "description": "Fine rule versions are immutable; delete is not allowed in the current API."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Fine Rule Details",
+      "item": [
+        {
+          "name": "Get All Fine Rule Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-details?page=1&limit=10&sortBy=created_at&order=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-details"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "created_at"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all fine rule details with pagination. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Fine Rule Detail by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-details/550e8400-e29b-41d4-a716-446655440003",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-details",
+                "550e8400-e29b-41d4-a716-446655440003"
+              ]
+            },
+            "description": "Get a specific fine rule detail by ID. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Fine Rule Detail",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rule_version_id\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"rule_type\": \"vehicle_type\",\n  \"key\": \"motorcycle\",\n  \"value\": \"500000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-details",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-details"
+              ]
+            },
+            "description": "Create a new fine rule detail. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Fine Rule Detail",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"750000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-details/550e8400-e29b-41d4-a716-446655440003",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-details",
+                "550e8400-e29b-41d4-a716-446655440003"
+              ]
+            },
+            "description": "Update an existing fine rule detail. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Fine Rule Detail",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/fine-rule-details/550e8400-e29b-41d4-a716-446655440003",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "fine-rule-details",
+                "550e8400-e29b-41d4-a716-446655440003"
+              ]
+            },
+            "description": "Delete a fine rule detail. Requires authentication and admin role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "Get Invoice Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoices/550e8400-e29b-41d4-a716-446655440004/detail",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoices",
+                "550e8400-e29b-41d4-a716-446655440004",
+                "detail"
+              ]
+            },
+            "description": "Get a fully joined invoice detail including member, violation, payment transaction, and fine rule version history."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoice?page=1&limit=10&sortBy=created_at&order=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoice"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "created_at"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all invoices with pagination. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Invoice by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoice/550e8400-e29b-41d4-a716-446655440004",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoice",
+                "550e8400-e29b-41d4-a716-446655440004"
+              ]
+            },
+            "description": "Get a specific invoice by ID. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Member Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/members/550e8400-e29b-41d4-a716-446655440005/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "members",
+                "550e8400-e29b-41d4-a716-446655440005",
+                "transactions"
+              ]
+            },
+            "description": "Get member transaction history with invoice, violation, payment transaction, and applied fine rule version."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Member Balance History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/members/550e8400-e29b-41d4-a716-446655440005/balance-history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "members",
+                "550e8400-e29b-41d4-a716-446655440005",
+                "balance-history"
+              ]
+            },
+            "description": "Get member balance history using the same joined transaction data."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"violation_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"member_id\": \"550e8400-e29b-41d4-a716-446655440005\",\n  \"status\": \"PENDING\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/invoice",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoice"
+              ]
+            },
+            "description": "Create a new invoice. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SUCCESS\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/invoice/550e8400-e29b-41d4-a716-446655440004",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoice",
+                "550e8400-e29b-41d4-a716-446655440004"
+              ]
+            },
+            "description": "Update an existing invoice. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Invoice",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoice/550e8400-e29b-41d4-a716-446655440004",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoice",
+                "550e8400-e29b-41d4-a716-446655440004"
+              ]
+            },
+            "description": "Delete an invoice. Requires authentication and admin role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Payment Transactions",
+      "item": [
+        {
+          "name": "Get All Payment Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payment?page=1&limit=10&sortBy=created_at&order=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "created_at"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "disabled": true
+                },
+                {
+                  "key": "scenario",
+                  "value": "SUCCESS",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all payment transactions with pagination. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payment/550e8400-e29b-41d4-a716-446655440006",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment",
+                "550e8400-e29b-41d4-a716-446655440006"
+              ]
+            },
+            "description": "Get a specific payment transaction by ID. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Payment Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"550e8400-e29b-41d4-a716-446655440004\",\n  \"internal_transaction_id\": \"TRX-20240623-0001\",\n  \"amount\": 500000,\n  \"status\": \"SUCCESS\",\n  \"scenario\": \"SUCCESS\",\n  \"paid_at\": \"2024-01-15T12:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment"
+              ]
+            },
+            "description": "Create a payment transaction from member balance. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Payment Transaction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SUCCESS\",\n  \"scenario\": \"SUCCESS\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment/550e8400-e29b-41d4-a716-446655440006",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment",
+                "550e8400-e29b-41d4-a716-446655440006"
+              ]
+            },
+            "description": "Update an existing payment transaction. Requires authentication and admin role."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Payment Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payment/550e8400-e29b-41d4-a716-446655440006",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment",
+                "550e8400-e29b-41d4-a716-446655440006"
+              ]
+            },
+            "description": "Delete a payment transaction. Requires authentication and admin role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "type",
+                  "value": "profile_user",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/uploads",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "uploads"
+              ]
+            },
+            "description": "Upload image or PDF file. Allowed type values are profile_user and violation_photo."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "description": "Base URL untuk API"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT token dari login endpoint"
+    }
+  ]
+}
