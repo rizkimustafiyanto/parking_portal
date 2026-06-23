@@ -27,6 +27,10 @@ import (
 	paymentsroutes "backend/internal/modules/payment-transaction/routes"
 	paymentssvc "backend/internal/modules/payment-transaction/service"
 
+	uploadhandler "backend/internal/modules/upload/handler"
+	uploaddroutes "backend/internal/modules/upload/routes"
+	uploadsvc "backend/internal/modules/upload/service"
+
 	"backend/pkg/response"
 
 	"gorm.io/gorm"
@@ -77,7 +81,14 @@ func Register(router *gin.Engine, db *gorm.DB, jwtSecret string) {
 	authHandler := authhandler.NewHandler(authService)
 	authroutes.Register(v1, authHandler)
 
+	uploadService := uploadsvc.NewService()
+	uploadHandler := uploadhandler.NewHandler(uploadService)
+	uploaddroutes.Register(v1, uploadHandler)
+
+	router.Static("/uploads", "./uploads")
+
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, response.Success("server is running", nil))
 	})
 }
+
