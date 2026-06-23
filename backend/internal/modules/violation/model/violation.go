@@ -10,14 +10,15 @@ import (
 
 type Violation struct {
 	common.BaseModel
-	PlateNumber   string    `gorm:"column:plate_number"`
-	ViolationType string    `gorm:"column:violation_type"`
-	Location      string    `gorm:"column:location"`
-	OccurredAt    time.Time `gorm:"column:occurred_at"`
-	PhotoURL      string    `gorm:"column:photo_url"`
-	OfficerID     uuid.UUID `gorm:"column:officer_id"`
+	PlateNumber        string    `gorm:"column:plate_number"`
+	ViolationTypeCode   string    `gorm:"column:violation_type"`
+	Location            string    `gorm:"column:location"`
+	OccurredAt          time.Time `gorm:"column:occurred_at"`
+	PhotoURL            string    `gorm:"column:photo_url"`
+	OfficerID           uuid.UUID `gorm:"column:officer_id"`
 
 	FineRuleVersionID uuid.UUID       `gorm:"column:fine_rule_version_id"`
 	Officer           usermodel.User  `gorm:"foreignKey:OfficerID;references:ID"`
 	FineRuleVersion   FineRuleVersion `gorm:"foreignKey:FineRuleVersionID;references:ID"`
+	ViolationType     ViolationType   `gorm:"foreignKey:ViolationTypeCode;references:Code"`
 }

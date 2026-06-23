@@ -18,6 +18,7 @@ type Repository interface {
 	Delete(id string) error
 	FindActiveFineRuleVersion() (*model.FineRuleVersion, error)
 	FindLatestFineRuleVersion() (*model.FineRuleVersion, error)
+	FindViolationTypeByCode(code string) (*model.ViolationType, error)
 	CountUnpaidViolationsByPlateSince(plateNumber string, since time.Time) (int64, error)
 }
 
@@ -40,6 +41,7 @@ func (r *repository) FindByID(id string) (*model.Violation, error) {
 		Preload("Officer").
 		Preload("FineRuleVersion.Publish").
 		Preload("FineRuleVersion.Details").
+		Preload("ViolationType").
 		Where("id = ?", id).
 		First(&violation).
 		Error
@@ -69,6 +71,7 @@ func (r *repository) FindAll(query pagedto.PaginationDTO, search string) ([]mode
 		Preload("Officer").
 		Preload("FineRuleVersion.Publish").
 		Preload("FineRuleVersion.Details").
+		Preload("ViolationType").
 		Order(query.SortBy + " " + query.OrderBy).
 		Offset(query.Offset()).
 		Limit(query.Limit).
@@ -90,7 +93,7 @@ func (r *repository) FindActiveFineRuleVersion() (*model.FineRuleVersion, error)
 	var version model.FineRuleVersion
 
 	err := r.db.
-		Preload("Publish").
+	Preload("Publish").
 		Preload("Details").
 		Where("is_active = ?", true).
 		Order("version_number DESC").
@@ -117,6 +120,14 @@ func (r *repository) FindLatestFineRuleVersion() (*model.FineRuleVersion, error)
 	}
 
 	return &version, nil
+}
+
+func (r *repository) FindViolationTypeByCode(code string) (*model.ViolationType, error) {
+	var item model.ViolationType
+	if err := r.db.Preload("CreatedBy").Where("code = ?", code).First(&item).Error; err != nil {
+		return nil, err
+	}
+	return &item, nil
 }
 
 func (r *repository) CountUnpaidViolationsByPlateSince(plateNumber string, since time.Time) (int64, error) {

@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"backend/internal/modules/violation/model"
@@ -26,9 +25,9 @@ func (s *fineCalculationService) Calculate(version *model.FineRuleVersion, viola
 		return 0, fmt.Errorf("violation is required")
 	}
 
-	baseAmount, err := baseAmountForViolationType(strings.TrimSpace(violation.ViolationType))
-	if err != nil {
-		return 0, err
+	baseAmount := violation.ViolationType.BaseAmount
+	if baseAmount <= 0 {
+		return 0, fmt.Errorf("violation type %s has invalid base amount", violation.ViolationTypeCode)
 	}
 
 	timeMultiplier, err := timeMultiplierForOccurredAt(violation.OccurredAt)
@@ -39,21 +38,6 @@ func (s *fineCalculationService) Calculate(version *model.FineRuleVersion, viola
 	repeatMultiplier := repeatMultiplierForCount(unpaidCount)
 
 	return baseAmount * timeMultiplier * repeatMultiplier, nil
-}
-
-func baseAmountForViolationType(violationType string) (float64, error) {
-	switch strings.ToLower(violationType) {
-	case "expired_meter":
-		return 50000, nil
-	case "no_parking_zone":
-		return 150000, nil
-	case "blocking_hydrant":
-		return 250000, nil
-	case "disabled_spot":
-		return 500000, nil
-	default:
-		return 0, fmt.Errorf("unsupported violation type: %s", violationType)
-	}
 }
 
 func timeMultiplierForOccurredAt(occurredAt time.Time) (float64, error) {

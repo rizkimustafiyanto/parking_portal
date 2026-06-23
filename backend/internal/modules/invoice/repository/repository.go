@@ -52,6 +52,7 @@ func (r *repository) FindByID(id string) (*model.Invoice, error) {
 		Preload("Violation.Officer").
 		Preload("Violation.FineRuleVersion.Publish").
 		Preload("Violation.FineRuleVersion.Details").
+		Preload("Violation.ViolationType").
 		Preload("Payment").
 		Where("id = ?", id).
 		First(&invoice).
@@ -72,6 +73,7 @@ func (r *repository) FindByMemberID(memberID string) ([]model.Invoice, error) {
 		Preload("Violation.Officer").
 		Preload("Violation.FineRuleVersion.Publish").
 		Preload("Violation.FineRuleVersion.Details").
+		Preload("Violation.ViolationType").
 		Preload("Payment").
 		Where("member_id = ?", memberID).
 		Order("created_at DESC").

@@ -10,7 +10,7 @@ import (
 
 type CreateViolationRequest struct {
 	PlateNumber       string    `json:"plate_number" validate:"required"`
-	ViolationType     string    `json:"violation_type" validate:"required"`
+	ViolationTypeCode string    `json:"violation_type_code" validate:"required"`
 	Location          string    `json:"location" validate:"required"`
 	OccurredAt        time.Time `json:"occurred_at" validate:"required"`
 	PhotoURL          string    `json:"photo_url"`
@@ -20,7 +20,7 @@ type CreateViolationRequest struct {
 
 type UpdateViolationRequest struct {
 	PlateNumber       string    `json:"plate_number"`
-	ViolationType     string    `json:"violation_type"`
+	ViolationTypeCode string    `json:"violation_type_code"`
 	Location          string    `json:"location"`
 	OccurredAt        time.Time `json:"occurred_at"`
 	PhotoURL          string    `json:"photo_url"`
@@ -52,7 +52,7 @@ type FineRuleVersionThrow struct {
 type ViolationResponse struct {
 	ID              string               `json:"id"`
 	PlateNumber     string               `json:"plate_number"`
-	ViolationType   string               `json:"violation_type"`
+	ViolationTypeCode string             `json:"violation_type_code"`
 	Location        string               `json:"location"`
 	OccurredAt      time.Time            `json:"occurred_at"`
 	PhotoURL        string               `json:"photo_url"`

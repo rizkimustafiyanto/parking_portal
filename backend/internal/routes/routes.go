@@ -47,6 +47,11 @@ func Register(router *gin.Engine, db *gorm.DB, jwtSecret string) {
 	violationHandler := violationhandler.NewHandler(violationService)
 	violationroutes.Register(v1, violationHandler, jwtSecret)
 
+	violationTypeRepository := violationrepo.NewViolationTypeRepository(db)
+	violationTypeService := violationsvc.NewViolationTypeService(violationTypeRepository)
+	violationTypeHandler := violationhandler.NewViolationTypeHandler(violationTypeService)
+	violationroutes.RegisterViolationType(v1, violationTypeHandler, jwtSecret)
+
 	fineRuleVersionRepository := violationrepo.NewFineRuleVersionRepository(db)
 	fineRuleVersionService := violationsvc.NewFineRuleVersionService(fineRuleVersionRepository)
 	fineRuleVersionHandler := violationhandler.NewFineRuleVersionHandler(fineRuleVersionService)

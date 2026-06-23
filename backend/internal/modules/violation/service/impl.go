@@ -26,6 +26,11 @@ func (s *service) Create(req dto.CreateViolationRequest) error {
 		return fmt.Errorf("fine rule version must be selected by the server")
 	}
 
+	violationType, err := s.repo.FindViolationTypeByCode(req.ViolationTypeCode)
+	if err != nil {
+		return fmt.Errorf("violation type not found: %w", err)
+	}
+
 	activeVersion, err := s.resolveActiveFineRuleVersion()
 	if err != nil {
 		return err
@@ -36,7 +41,7 @@ func (s *service) Create(req dto.CreateViolationRequest) error {
 			ID: uuid.New(),
 		},
 		PlateNumber:       req.PlateNumber,
-		ViolationType:     req.ViolationType,
+		ViolationTypeCode: violationType.Code,
 		Location:          req.Location,
 		OccurredAt:        req.OccurredAt,
 		PhotoURL:          req.PhotoURL,
@@ -81,8 +86,12 @@ func (s *service) Update(id string, req dto.UpdateViolationRequest) error {
 	if req.PlateNumber != "" {
 		violation.PlateNumber = req.PlateNumber
 	}
-	if req.ViolationType != "" {
-		violation.ViolationType = req.ViolationType
+	if req.ViolationTypeCode != "" {
+		violationType, err := s.repo.FindViolationTypeByCode(req.ViolationTypeCode)
+		if err != nil {
+			return fmt.Errorf("violation type not found: %w", err)
+		}
+		violation.ViolationTypeCode = violationType.Code
 	}
 	if req.Location != "" {
 		violation.Location = req.Location
@@ -111,7 +120,7 @@ func toResponse(violation *model.Violation) *dto.ViolationResponse {
 	return &dto.ViolationResponse{
 		ID:            violation.ID.String(),
 		PlateNumber:   violation.PlateNumber,
-		ViolationType: violation.ViolationType,
+		ViolationTypeCode: violation.ViolationTypeCode,
 		Location:      violation.Location,
 		OccurredAt:    violation.OccurredAt,
 		PhotoURL:      violation.PhotoURL,
