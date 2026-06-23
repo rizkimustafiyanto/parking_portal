@@ -2,6 +2,7 @@ package repository
 
 import (
 	"strings"
+	"time"
 
 	"backend/internal/modules/violation/model"
 	pagedto "backend/pkg/dto"
@@ -17,6 +18,7 @@ type Repository interface {
 	Delete(id string) error
 	FindActiveFineRuleVersion() (*model.FineRuleVersion, error)
 	FindLatestFineRuleVersion() (*model.FineRuleVersion, error)
+	CountUnpaidViolationsByPlateSince(plateNumber string, since time.Time) (int64, error)
 }
 
 type repository struct {
@@ -115,4 +117,19 @@ func (r *repository) FindLatestFineRuleVersion() (*model.FineRuleVersion, error)
 	}
 
 	return &version, nil
+}
+
+func (r *repository) CountUnpaidViolationsByPlateSince(plateNumber string, since time.Time) (int64, error) {
+	var total int64
+
+	err := r.db.
+		Model(&model.Violation{}).
+		Joins("JOIN invoices ON invoices.violation_id = violations.id").
+		Where("violations.plate_number = ?", plateNumber).
+		Where("violations.occurred_at >= ?", since).
+		Where("invoices.status <> ?", "PAID").
+		Count(&total).
+		Error
+
+	return total, err
 }

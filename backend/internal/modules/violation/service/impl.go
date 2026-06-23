@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+
 	dbmodel "backend/internal/common/model"
 	userdto "backend/internal/modules/user/dto"
 	"backend/internal/modules/violation/dto"
@@ -21,13 +22,13 @@ func NewService(repo repository.Repository) Service {
 }
 
 func (s *service) Create(req dto.CreateViolationRequest) error {
-	fineRuleVersionID := req.FineRuleVersionID
-	if fineRuleVersionID == uuid.Nil {
-		activeVersion, err := s.resolveActiveFineRuleVersion()
-		if err != nil {
-			return err
-		}
-		fineRuleVersionID = activeVersion.ID
+	if req.FineRuleVersionID != uuid.Nil {
+		return fmt.Errorf("fine rule version must be selected by the server")
+	}
+
+	activeVersion, err := s.resolveActiveFineRuleVersion()
+	if err != nil {
+		return err
 	}
 
 	violation := model.Violation{
@@ -35,11 +36,12 @@ func (s *service) Create(req dto.CreateViolationRequest) error {
 			ID: uuid.New(),
 		},
 		PlateNumber:       req.PlateNumber,
+		ViolationType:     req.ViolationType,
 		Location:          req.Location,
 		OccurredAt:        req.OccurredAt,
 		PhotoURL:          req.PhotoURL,
 		OfficerID:         req.OfficerID,
-		FineRuleVersionID: fineRuleVersionID,
+		FineRuleVersionID: activeVersion.ID,
 	}
 
 	return s.repo.Create(&violation)
@@ -79,6 +81,9 @@ func (s *service) Update(id string, req dto.UpdateViolationRequest) error {
 	if req.PlateNumber != "" {
 		violation.PlateNumber = req.PlateNumber
 	}
+	if req.ViolationType != "" {
+		violation.ViolationType = req.ViolationType
+	}
 	if req.Location != "" {
 		violation.Location = req.Location
 	}
@@ -104,11 +109,12 @@ func (s *service) Delete(id string) error {
 
 func toResponse(violation *model.Violation) *dto.ViolationResponse {
 	return &dto.ViolationResponse{
-		ID:          violation.ID.String(),
-		PlateNumber: violation.PlateNumber,
-		Location:    violation.Location,
-		OccurredAt:  violation.OccurredAt,
-		PhotoURL:    violation.PhotoURL,
+		ID:            violation.ID.String(),
+		PlateNumber:   violation.PlateNumber,
+		ViolationType: violation.ViolationType,
+		Location:      violation.Location,
+		OccurredAt:    violation.OccurredAt,
+		PhotoURL:      violation.PhotoURL,
 		Officer: userdto.UserThrow{
 			ID:    violation.Officer.ID.String(),
 			Name:  violation.Officer.Name,

@@ -40,7 +40,15 @@ func (s *service) Create(req dto.CreateInvoiceRequest) error {
 		return err
 	}
 
-	amount, err := s.fineCalculator.Calculate(&violation.FineRuleVersion)
+	unpaidCount, err := s.violationRepo.CountUnpaidViolationsByPlateSince(
+		violation.PlateNumber,
+		violation.OccurredAt.AddDate(0, 0, -90),
+	)
+	if err != nil {
+		return err
+	}
+
+	amount, err := s.fineCalculator.Calculate(&violation.FineRuleVersion, violation, unpaidCount)
 	if err != nil {
 		return err
 	}
