@@ -22,6 +22,9 @@ type Config struct {
 	CORSOrigins    []string
 
 	JWTSecret string
+	RabbitMQURL      string
+	RabbitMQExchange string
+	RabbitMQEnabled  bool
 
 	AutoMigrate       bool
 	SeedDatabase      bool
@@ -42,6 +45,9 @@ func Load() (*Config, error) {
 	viper.SetDefault("DB_NAME", "mydb")
 	viper.SetDefault("DB_SSLMODE", "disable")
 	viper.SetDefault("JWT_SECRET", "secret")
+	viper.SetDefault("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+	viper.SetDefault("RABBITMQ_EXCHANGE", "portal_digital.events")
+	viper.SetDefault("RABBITMQ_ENABLED", true)
 	viper.SetDefault("DB_TIMEZONE", "UTC")
 	viper.SetDefault("DB_MAX_OPEN_CONNS", 10)
 	viper.SetDefault("DB_MAX_IDLE_CONNS", 10)
@@ -68,6 +74,9 @@ func Load() (*Config, error) {
 		DBName:            viper.GetString("DB_NAME"),
 		DBSSLMode:         viper.GetString("DB_SSLMODE"),
 		JWTSecret:         viper.GetString("JWT_SECRET"),
+		RabbitMQURL:       viper.GetString("RABBITMQ_URL"),
+		RabbitMQExchange:  viper.GetString("RABBITMQ_EXCHANGE"),
+		RabbitMQEnabled:   viper.GetBool("RABBITMQ_ENABLED"),
 		Timezone:          viper.GetString("DB_TIMEZONE"),
 		DBMaxOpenConns:    viper.GetInt("DB_MAX_OPEN_CONNS"),
 		DBMaxIdleConns:    viper.GetInt("DB_MAX_IDLE_CONNS"),

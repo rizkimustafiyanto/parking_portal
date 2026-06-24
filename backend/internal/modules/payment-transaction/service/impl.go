@@ -1,9 +1,12 @@
 package service
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"strings"
 
+	"backend/internal/messaging"
 	paymentconst "backend/internal/modules/payment-transaction/constans"
 	"backend/internal/modules/payment-transaction/dto"
 	paymentModel "backend/internal/modules/payment-transaction/model"
@@ -12,11 +15,12 @@ import (
 )
 
 type service struct {
-	repo repository.Repository
+	repo      repository.Repository
+	publisher messaging.Publisher
 }
 
-func NewService(repo repository.Repository) Service {
-	return &service{repo: repo}
+func NewService(repo repository.Repository, publisher messaging.Publisher) Service {
+	return &service{repo: repo, publisher: publisher}
 }
 
 func (s *service) Create(req dto.CreatePaymentTransactionRequest) error {
@@ -24,14 +28,33 @@ func (s *service) Create(req dto.CreatePaymentTransactionRequest) error {
 		return fmt.Errorf("member balance payment requires SUCCESS status and SUCCESS scenario")
 	}
 
-	return s.repo.ProcessMemberBalancePayment(
+	if err := s.repo.ProcessMemberBalancePayment(
 		req.InvoiceID.String(),
 		req.InternalTransactionID,
 		req.Amount,
 		req.Status,
 		req.Scenario,
 		req.PaidAt,
-	)
+	); err != nil {
+		return err
+	}
+
+	if s.publisher != nil {
+		if err := s.publisher.PublishJSON(context.Background(), "payment.completed", messaging.PaymentCompletedEvent{
+			EventName:             "payment.completed",
+			InvoiceID:             req.InvoiceID.String(),
+			InternalTransactionID: req.InternalTransactionID,
+			Amount:                req.Amount,
+			Status:                string(req.Status),
+			Scenario:              string(req.Scenario),
+			PaidAt:                req.PaidAt,
+			CreatedAt:             req.PaidAt,
+		}); err != nil {
+			log.Printf("publish payment.completed failed: %v", err)
+		}
+	}
+
+	return nil
 }
 
 func (s *service) GetByID(id string) (*dto.PaymentTransactionResponse, error) {

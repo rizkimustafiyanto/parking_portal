@@ -31,6 +31,7 @@ import (
 	uploaddroutes "backend/internal/modules/upload/routes"
 	uploadsvc "backend/internal/modules/upload/service"
 
+	"backend/internal/messaging"
 	"backend/pkg/response"
 
 	"gorm.io/gorm"
@@ -38,7 +39,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Register(router *gin.Engine, db *gorm.DB, jwtSecret string) {
+func Register(router *gin.Engine, db *gorm.DB, jwtSecret string, publisher messaging.Publisher) {
 	v1 := router.Group("/api")
 
 	userRepository := userrepo.NewRepository(db)
@@ -68,12 +69,12 @@ func Register(router *gin.Engine, db *gorm.DB, jwtSecret string) {
 
 	invoiceRepository := invoicerepo.NewRepository(db)
 	fineCalculator := violationsvc.NewFineCalculationService()
-	invoiceService := invoicesvc.NewService(invoiceRepository, violationRepository, fineCalculator)
+	invoiceService := invoicesvc.NewService(invoiceRepository, violationRepository, fineCalculator, publisher)
 	invoiceHandler := invoicehandler.NewHandler(invoiceService)
 	invoiceroutes.Register(v1, invoiceHandler, jwtSecret)
 
 	paymentsRepo := paymentsrepo.NewRepository(db)
-	paymentsService := paymentssvc.NewService(paymentsRepo)
+	paymentsService := paymentssvc.NewService(paymentsRepo, publisher)
 	paymentsHandler := paymentshandler.NewHandler(paymentsService)
 	paymentsroutes.Register(v1, paymentsHandler, jwtSecret)
 
@@ -91,4 +92,3 @@ func Register(router *gin.Engine, db *gorm.DB, jwtSecret string) {
 		c.JSON(http.StatusOK, response.Success("server is running", nil))
 	})
 }
-

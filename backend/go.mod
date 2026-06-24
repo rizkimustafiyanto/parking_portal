@@ -60,3 +60,5 @@ require (
 	golang.org/x/text v0.38.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
+
+require github.com/rabbitmq/amqp091-go v1.12.0

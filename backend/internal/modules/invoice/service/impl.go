@@ -1,10 +1,13 @@
 package service
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	dbmodel "backend/internal/common/model"
+	"backend/internal/messaging"
 	"backend/internal/modules/invoice/dto"
 	invoiceModel "backend/internal/modules/invoice/model"
 	"backend/internal/modules/invoice/repository"
@@ -21,16 +24,18 @@ import (
 )
 
 type service struct {
-	repo             repository.Repository
+	repo           repository.Repository
 	violationRepo  violationrepo.Repository
 	fineCalculator violationsvc.FineCalculationService
+	publisher      messaging.Publisher
 }
 
-func NewService(repo repository.Repository, violationRepo violationrepo.Repository, fineCalculator violationsvc.FineCalculationService) Service {
+func NewService(repo repository.Repository, violationRepo violationrepo.Repository, fineCalculator violationsvc.FineCalculationService, publisher messaging.Publisher) Service {
 	return &service{
 		repo:           repo,
 		violationRepo:  violationRepo,
 		fineCalculator: fineCalculator,
+		publisher:      publisher,
 	}
 }
 
@@ -68,7 +73,24 @@ func (s *service) Create(req dto.CreateInvoiceRequest) error {
 	}
 	invoice.MemberID = parsedMemberID
 
-	return s.repo.Create(&invoice)
+	if err := s.repo.Create(&invoice); err != nil {
+		return err
+	}
+
+	if s.publisher != nil {
+		if err := s.publisher.PublishJSON(context.Background(), "invoice.created", messaging.InvoiceCreatedEvent{
+			EventName:   "invoice.created",
+			InvoiceID:   invoice.ID.String(),
+			MemberID:    invoice.MemberID.String(),
+			ViolationID: invoice.ViolationID.String(),
+			Amount:      invoice.Amount,
+			CreatedAt:   invoice.CreatedAt,
+		}); err != nil {
+			log.Printf("publish invoice.created failed: %v", err)
+		}
+	}
+
+	return nil
 }
 
 func (s *service) GetByID(id string) (*dto.InvoiceResponse, error) {
