@@ -1,8 +1,6 @@
 package seed
 
 import (
-	"errors"
-
 	"backend/internal/config"
 	"backend/internal/modules/user/model"
 
@@ -21,11 +19,12 @@ func Run(db *gorm.DB, cfg *config.Config) error {
 			}
 		}
 
-		var existing model.User
-		if err := tx.Where("email = ?", cfg.SeedAdminEmail).First(&existing).Error; err == nil {
-			return nil
-		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		var existingCount int64
+		if err := tx.Model(&model.User{}).Where("email = ?", cfg.SeedAdminEmail).Count(&existingCount).Error; err != nil {
 			return err
+		}
+		if existingCount > 0 {
+			return nil
 		}
 
 		admin, err := seedAdmin(tx, cfg)
