@@ -19,6 +19,7 @@ export default function MemberDashboardLayout({
   return (
     <RoleGuard role="member">
       <DashboardShell
+        role="member"
         title="Member Workspace"
         subtitle="Area personal untuk user dan member melihat status, riwayat, dan info penting."
         badge="Member / User"

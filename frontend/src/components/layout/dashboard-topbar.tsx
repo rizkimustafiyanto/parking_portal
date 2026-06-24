@@ -5,14 +5,17 @@ import { LayoutDashboardIcon, LogOutIcon } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { useAuthStore } from "@/features/auth"
+import { DashboardPulseIndicator } from "@/features/realtime/components/DashboardPulseIndicator"
+import type { DashboardRole } from "@/features/realtime/types"
 import { cn } from "@/lib/utils"
 
 type DashboardTopbarProps = {
   homeHref: string
   title: string
+  role: DashboardRole
 }
 
-function DashboardTopbar({ homeHref, title }: DashboardTopbarProps) {
+function DashboardTopbar({ homeHref, title, role }: DashboardTopbarProps) {
   const logout = useAuthStore((state) => state.logout)
 
   function handleLogout() {
@@ -33,6 +36,7 @@ function DashboardTopbar({ homeHref, title }: DashboardTopbarProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        <DashboardPulseIndicator role={role} />
         <Link href={homeHref} className={cn(buttonVariants({ variant: "outline" }), "rounded-full px-4")}>
           Dashboard
         </Link>

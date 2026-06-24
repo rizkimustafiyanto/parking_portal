@@ -11,13 +11,13 @@ import { fetchUsers, type UserRecord } from "@/features/users"
 export default function MemberProfilePage() {
   const memberId = getStoredUserId()
   const [profile, setProfile] = useState<UserRecord | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(() => Boolean(memberId))
+  const [error, setError] = useState<string | null>(
+    memberId ? null : "User ID tidak ditemukan di token. Silakan login ulang.",
+  )
 
   useEffect(() => {
     if (!memberId) {
-      setLoading(false)
-      setError("User ID tidak ditemukan di token. Silakan login ulang.")
       return
     }
 
