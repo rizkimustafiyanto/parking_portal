@@ -1,3 +1,4 @@
+# Build Stage
 FROM golang:1.26.4-alpine AS builder
 
 WORKDIR /app
@@ -9,16 +10,22 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -buildvcs=false -o /app/bin/api ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -buildvcs=false -ldflags="-s -w" -o api ./cmd/api
 
+# Runtime Stage
 FROM alpine:3.21
 
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates tzdata
+
+COPY --from=builder /app/api /app/api
+COPY --from=builder /app/migrations /app/migrations
+
 RUN mkdir -p /app/uploads
 
-COPY --from=builder /app/bin/api /app/api
-COPY migrations /app/migrations
+ENV TZ=Asia/Jakarta
+
+EXPOSE 8100
 
 CMD ["/app/api"]
