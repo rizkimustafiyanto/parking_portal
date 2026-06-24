@@ -1,6 +1,8 @@
 package seed
 
 import (
+	"fmt"
+
 	invoiceconst "backend/internal/modules/invoice/constans"
 	invoicemodel "backend/internal/modules/invoice/model"
 	paymentconst "backend/internal/modules/payment-transaction/constans"
@@ -36,20 +38,24 @@ func seedFinanceDomain(tx *gorm.DB) error {
 }
 
 func createInvoices(tx *gorm.DB, memberOneID, memberTwoID uuid.UUID, violations []violationmodel.Violation) ([]invoicemodel.Invoice, error) {
+	if len(violations) < 3 {
+		return nil, fmt.Errorf("seed finance requires at least 3 violations, got %d", len(violations))
+	}
+
 	invoices := []invoicemodel.Invoice{
 		{
 			BaseModel:   gormModelBase(),
 			ViolationID: violations[0].ID,
 			MemberID:    memberOneID,
 			Amount:      50000,
-			Status:      invoiceconst.InvoicePending,
+			Status:      invoiceconst.InvoicePaid,
 		},
 		{
 			BaseModel:   gormModelBase(),
 			ViolationID: violations[1].ID,
 			MemberID:    memberOneID,
 			Amount:      100000,
-			Status:      invoiceconst.InvoicePaid,
+			Status:      invoiceconst.InvoicePending,
 		},
 		{
 			BaseModel:   gormModelBase(),
@@ -74,28 +80,28 @@ func createPaymentTransactions(tx *gorm.DB, invoices []invoicemodel.Invoice) err
 		{
 			BaseModel:             gormModelBase(),
 			InvoiceID:             invoices[0].ID,
-			InternalTransactionID: "seed-ptx-0001",
+			InternalTransactionID: "TRX-SUCCESS-SEED-0001",
 			Amount:                50000,
-			Status:                paymentconst.PaymentPending,
+			Status:                paymentconst.PaymentSuccess,
 			Scenario:              paymentconst.ScenarioSuccess,
 			PaidAt:                timeDateUTC(2026, 6, 24, 10, 0),
 		},
 		{
 			BaseModel:             gormModelBase(),
 			InvoiceID:             invoices[1].ID,
-			InternalTransactionID: "seed-ptx-0002",
+			InternalTransactionID: "TRX-FAILED-SEED-0002",
 			Amount:                100000,
-			Status:                paymentconst.PaymentSuccess,
-			Scenario:              paymentconst.ScenarioSuccess,
+			Status:                paymentconst.PaymentFailed,
+			Scenario:              paymentconst.ScenarioFailure,
 			PaidAt:                timeDateUTC(2026, 6, 24, 13, 0),
 		},
 		{
 			BaseModel:             gormModelBase(),
 			InvoiceID:             invoices[2].ID,
-			InternalTransactionID: "seed-ptx-0003",
+			InternalTransactionID: "TRX-TIMEOUT-SEED-0003",
 			Amount:                150000,
 			Status:                paymentconst.PaymentFailed,
-			Scenario:              paymentconst.ScenarioFailure,
+			Scenario:              paymentconst.ScenarioTimeout,
 			PaidAt:                timeDateUTC(2026, 6, 25, 8, 0),
 		},
 	}

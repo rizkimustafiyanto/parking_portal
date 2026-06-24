@@ -132,6 +132,14 @@ Jika ingin mengulang data seed dari awal, gunakan:
 
 - `SEED_RESET_DATA=true`
 
+Seed finance menyediakan data contoh untuk invoice dan payment transaction dengan beberapa scenario mock:
+
+- `SUCCESS` untuk pembayaran berhasil
+- `FAILURE` untuk simulasi payment gagal
+- `TIMEOUT` untuk simulasi payment timeout
+
+Data awal ini dipakai agar alur member dan officer bisa diuji tanpa bergantung ke payment provider eksternal.
+
 ## Docker
 
 Repository ini juga menyediakan file Docker Compose di [infrastructure/docker-compose.yml](./infrastructure/docker-compose.yml).
@@ -145,7 +153,7 @@ Gunakan file tersebut jika ingin menjalankan service pendukung seperti PostgreSQ
 - Manajemen user
 - Manajemen violation dan fine rule
 - Invoice
-- Payment transaction
+- Payment transaction dengan mock `PaymentService.charge(invoice_id, amount, scenario)`
 - Upload file
 - Event processing dengan RabbitMQ
 

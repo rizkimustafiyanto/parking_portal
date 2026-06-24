@@ -349,17 +349,23 @@ Query opsional:
 
 ### `POST /payment`
 
-Hanya role `officer`.
+Role `member` dan `officer` sama-sama dapat memakai endpoint ini.  
+Jika request datang dari member, backend hanya akan memproses invoice milik member tersebut.
+
+Endpoint ini menggunakan payment provider mock internal.
+Field `scenario` menentukan hasil simulasi:
+
+- `SUCCESS` -> payment dianggap berhasil
+- `FAILURE` -> payment dianggap gagal
+- `TIMEOUT` -> payment timeout dan disimpan sebagai gagal
 
 Request body:
 
 ```json
 {
   "invoice_id": "uuid-invoice",
-  "internal_transaction_id": "TRX-001",
   "amount": 500000,
-  "status": "paid",
-  "scenario": "cash",
+  "scenario": "SUCCESS",
   "paid_at": "2026-06-24T10:00:00Z"
 }
 ```
@@ -400,4 +406,3 @@ Response sukses:
 
 - Route yang tercantum di atas mengikuti definisi router backend saat ini.
 - Jika ada perubahan pada handler atau route registration, dokumen ini perlu di-update agar tetap sinkron.
-

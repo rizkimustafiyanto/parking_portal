@@ -22,9 +22,7 @@ export default function OfficerPaymentsPage() {
   const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null)
   const [form, setForm] = useState({
     invoice_id: "",
-    internal_transaction_id: "",
     amount: "0",
-    status: "SUCCESS",
     scenario: "SUCCESS",
     paid_at: "",
   })
@@ -111,9 +109,7 @@ export default function OfficerPaymentsPage() {
       setEditingId(null)
       setForm({
         invoice_id: "",
-        internal_transaction_id: "",
         amount: "0",
-        status: "SUCCESS",
         scenario: "SUCCESS",
         paid_at: "",
       })
@@ -130,9 +126,7 @@ export default function OfficerPaymentsPage() {
     setEditingId(item.id)
     setForm({
       invoice_id: item.invoice_id,
-      internal_transaction_id: item.internal_transaction_id,
       amount: String(item.amount),
-      status: item.status,
       scenario: item.scenario,
       paid_at: item.paid_at.slice(0, 19),
     })
@@ -187,13 +181,7 @@ export default function OfficerPaymentsPage() {
                   </option>
                 ))}
               </select>
-              <Input value={form.internal_transaction_id} onChange={(e) => setForm((current) => ({ ...current, internal_transaction_id: e.target.value }))} placeholder="Internal transaction id" required />
               <Input value={form.amount} onChange={(e) => setForm((current) => ({ ...current, amount: e.target.value }))} type="number" min="0" placeholder="Amount" />
-              <select value={form.status} onChange={(e) => setForm((current) => ({ ...current, status: e.target.value }))} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
-                <option value="SUCCESS">SUCCESS</option>
-                <option value="PENDING">PENDING</option>
-                <option value="FAILED">FAILED</option>
-              </select>
               <select value={form.scenario} onChange={(e) => setForm((current) => ({ ...current, scenario: e.target.value }))} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
                 <option value="SUCCESS">SUCCESS</option>
                 <option value="FAILURE">FAILURE</option>
