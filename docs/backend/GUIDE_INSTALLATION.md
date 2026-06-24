@@ -13,6 +13,7 @@ Panduan ini menjelaskan cara menjalankan backend `portal_digital` secara lokal.
 
 - `backend/cmd/api` - entry point aplikasi.
 - `backend/internal` - source utama backend.
+- `backend/internal/database/seed` - kumpulan seed per domain agar mudah diperluas.
 - `backend/migrations` - file migrasi database.
 - `backend/uploads` - file hasil upload.
 
@@ -54,6 +55,7 @@ Berikut variabel yang digunakan backend:
 - `RABBITMQ_EXCHANGE` - nama exchange RabbitMQ.
 - `AUTO_MIGRATE` - menjalankan migrasi otomatis saat startup.
 - `SEED_DATABASE` - menjalankan seeding data awal.
+- `SEED_RESET_DATA` - mengosongkan tabel seed dulu lalu isi ulang dari nol.
 - `SEED_ADMIN_NAME` - nama admin awal.
 - `SEED_ADMIN_EMAIL` - email admin awal.
 - `SEED_ADMIN_PASSWORD` - password admin awal.
@@ -77,8 +79,35 @@ Backend ini melakukan migrasi dan seed saat startup jika variabel berikut aktif:
 
 - `AUTO_MIGRATE=true`
 - `SEED_DATABASE=true`
+- `SEED_RESET_DATA=true` hanya bila ingin hapus data seed lama dan membuat data baru dari nol
 
 Jika ingin data admin awal dibuat otomatis, pastikan `SEED_DATABASE=true`.
+
+## Seed Scalable
+
+Seed backend sekarang disusun per domain supaya mudah ditambah tanpa membuat satu file besar.
+
+Struktur utamanya:
+
+- `backend/internal/database/seed/seed.go` - orchestrator seed utama.
+- `backend/internal/database/seed/users.go` - seed user dan helper admin.
+- `backend/internal/database/seed/violations.go` - seed rule, violation type, dan violation.
+- `backend/internal/database/seed/finance.go` - seed invoice dan payment transaction.
+- `backend/internal/database/seed/helpers.go` - helper umum seperti truncate/reset.
+- `backend/internal/database/seed/time.go` - helper waktu seed agar konsisten.
+
+Mode reset sangat berguna saat:
+
+- ingin menghapus data demo yang lama
+- ingin memvalidasi ulang relasi antar tabel
+- ingin memastikan semua tabel seed terisi ulang dengan urutan yang sama
+
+Contoh konfigurasi untuk fresh seed:
+
+```env
+SEED_DATABASE=true
+SEED_RESET_DATA=true
+```
 
 ## Menjalankan Backend
 
@@ -115,4 +144,3 @@ Respons sukses:
 - Backend menggunakan JWT untuk endpoint yang dilindungi.
 - File upload disimpan dan disajikan dari folder `uploads`.
 - Jika RabbitMQ tidak tersedia, aplikasi tetap bisa startup, tetapi fitur event publisher/worker akan dinonaktifkan saat koneksi gagal.
-

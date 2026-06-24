@@ -29,6 +29,7 @@ Struktur backend dibagi menjadi beberapa lapisan:
 
 - `internal/config` untuk konfigurasi aplikasi
 - `internal/database` untuk koneksi, migrasi, dan seed data
+- `internal/database/seed` untuk seed modular per domain
 - `internal/routes` untuk registrasi route utama
 - `internal/middleware` untuk auth, role, dan context
 - `internal/modules/*` untuk domain bisnis
@@ -145,6 +146,7 @@ Beberapa variabel penting:
 - `RABBITMQ_ENABLED`
 - `AUTO_MIGRATE`
 - `SEED_DATABASE`
+- `SEED_RESET_DATA`
 
 ## Flow backend singkat
 
@@ -156,4 +158,3 @@ Beberapa variabel penting:
 - route didaftarkan
 - middleware dipasang
 - RabbitMQ worker dijalankan jika aktif
-
