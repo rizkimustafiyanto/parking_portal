@@ -74,7 +74,7 @@ func Register(router *gin.Engine, db *gorm.DB, jwtSecret string, publisher messa
 	invoiceroutes.Register(v1, invoiceHandler, jwtSecret)
 
 	paymentsRepo := paymentsrepo.NewRepository(db)
-	paymentsService := paymentssvc.NewService(paymentsRepo, publisher)
+	paymentsService := paymentssvc.NewService(paymentsRepo, invoiceRepository, publisher)
 	paymentsHandler := paymentshandler.NewHandler(paymentsService)
 	paymentsroutes.Register(v1, paymentsHandler, jwtSecret)
 

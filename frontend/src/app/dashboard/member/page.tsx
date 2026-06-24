@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LoadingState } from "@/components/ui/loading-state"
 import { cn } from "@/lib/utils"
 import { getStoredUserId } from "@/features/auth"
-import { fetchMemberBalanceHistory, fetchMemberInvoices, type InvoiceRecord } from "@/features/finance"
+import { createPayment, fetchMemberBalanceHistory, fetchMemberInvoices, type InvoiceRecord, type PaymentScenario } from "@/features/finance"
 
 type OverviewState = {
   loading: boolean
@@ -28,6 +28,10 @@ const initialState: OverviewState = {
 export default function MemberDashboardPage() {
   const memberId = getStoredUserId()
   const [overview, setOverview] = useState<OverviewState>(initialState)
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState("")
+  const [scenario, setScenario] = useState<PaymentScenario>("SUCCESS")
+  const [paymentBusy, setPaymentBusy] = useState(false)
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!memberId) {
@@ -91,6 +95,50 @@ export default function MemberDashboardPage() {
     { label: "Invoice paid", value: summary.paid, icon: BadgeCheckIcon },
     { label: "Invoice pending", value: summary.pending, icon: HeartHandshakeIcon },
   ]
+
+  const pendingInvoices = overview.invoices.filter((item) => item.status === "PENDING")
+
+  async function submitPayment(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!memberId) {
+      setPaymentMessage("User ID tidak ditemukan. Silakan login ulang.")
+      return
+    }
+
+    const invoice = overview.invoices.find((item) => item.id === selectedInvoiceId)
+    if (!invoice) {
+      setPaymentMessage("Pilih invoice yang akan dibayar.")
+      return
+    }
+
+    setPaymentBusy(true)
+    setPaymentMessage(null)
+    try {
+      await createPayment({
+        invoice_id: invoice.id,
+        amount: invoice.amount ?? 0,
+        scenario,
+        paid_at: new Date().toISOString(),
+      })
+
+      setPaymentMessage(`Payment diproses dengan scenario ${scenario}.`)
+      const [invoiceRes, historyRes] = await Promise.all([
+        fetchMemberInvoices(memberId),
+        fetchMemberBalanceHistory(memberId),
+      ])
+
+      setOverview({
+        loading: false,
+        error: null,
+        invoices: invoiceRes.data ?? [],
+        history: historyRes.data ?? [],
+      })
+    } catch (err) {
+      setPaymentMessage(err instanceof Error ? err.message : "Gagal memproses payment")
+    } finally {
+      setPaymentBusy(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.16),transparent_35%),linear-gradient(180deg,#f8fafc_0%,#ecfeff_100%)] px-4 py-8 dark:bg-[radial-gradient(circle_at_top,rgba(20,184,166,0.18),transparent_35%),linear-gradient(180deg,#020617_0%,#064e3b_100%)]">
@@ -227,9 +275,78 @@ export default function MemberDashboardPage() {
                 </CardContent>
               </Card>
             </div>
+
+            <Card className="rounded-3xl border-emerald-100 bg-white/95 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/95">
+              <CardHeader className="p-6">
+                <CardDescription>Member / User</CardDescription>
+                <CardTitle className="text-2xl">Bayar Invoice</CardTitle>
+                <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  Pilih invoice yang masih pending lalu tentukan scenario untuk mensimulasikan hasil payment.
+                </p>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <form className="grid gap-4 md:grid-cols-2" onSubmit={submitPayment}>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Invoice</label>
+                    <select
+                      value={selectedInvoiceId}
+                      onChange={(e) => setSelectedInvoiceId(e.target.value)}
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                      required
+                    >
+                      <option value="">Pilih invoice pending</option>
+                      {pendingInvoices.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.id} - {item.violation?.plate_number ?? "-"} - {item.amount ?? 0}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Scenario</label>
+                    <select
+                      value={scenario}
+                      onChange={(e) => setScenario(e.target.value as PaymentScenario)}
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      <option value="SUCCESS">SUCCESS</option>
+                      <option value="FAILURE">FAILURE</option>
+                      <option value="TIMEOUT">TIMEOUT</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <div className="rounded-2xl border border-dashed border-emerald-100 bg-emerald-50/50 p-4 text-sm text-slate-600 dark:border-emerald-900/30 dark:bg-slate-800/60 dark:text-slate-300">
+                      Amount akan diambil dari invoice terpilih: <span className="font-medium">{textOrDash(overview.invoices.find((item) => item.id === selectedInvoiceId)?.amount ?? "-")}</span>
+                    </div>
+                  </div>
+                  {paymentMessage ? (
+                    <div className="md:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
+                      {paymentMessage}
+                    </div>
+                  ) : null}
+                  <div className="md:col-span-2">
+                    <button
+                      type="submit"
+                      disabled={paymentBusy}
+                      className="inline-flex h-10 items-center justify-center rounded-md bg-emerald-600 px-4 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {paymentBusy ? "Memproses..." : "Bayar sekarang"}
+                    </button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
           </>
         ) : null}
       </div>
     </div>
   )
+}
+
+function textOrDash(value: string | number | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "-"
+  }
+
+  return value && value.trim() ? value : "-"
 }

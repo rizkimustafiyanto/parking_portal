@@ -96,9 +96,7 @@ export default function OfficerPaymentsPage() {
     try {
       const payload = {
         invoice_id: form.invoice_id,
-        internal_transaction_id: form.internal_transaction_id,
         amount: Number(form.amount),
-        status: form.status,
         scenario: form.scenario,
         paid_at: new Date(form.paid_at).toISOString(),
       }

@@ -79,9 +79,7 @@ export type UpdateInvoicePayload = {
 
 export type CreatePaymentPayload = {
   invoice_id: string
-  internal_transaction_id: string
   amount: number
-  status: PaymentStatus
   scenario: PaymentScenario
   paid_at: string
 }
@@ -93,4 +91,3 @@ export type UpdatePaymentPayload = {
   scenario?: PaymentScenario
   paid_at?: string
 }
-

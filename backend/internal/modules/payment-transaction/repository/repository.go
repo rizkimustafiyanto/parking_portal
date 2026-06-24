@@ -61,13 +61,15 @@ func (r *repository) ProcessMemberBalancePayment(invoiceID string, internalTrans
 			return fmt.Errorf("payment amount must match invoice amount")
 		}
 
-		if member.Balance < inv.Amount {
+		if status == paymentconst.PaymentSuccess && member.Balance < inv.Amount {
 			return fmt.Errorf("insufficient member balance")
 		}
 
-		member.Balance -= inv.Amount
-		if err := tx.Model(&member).Update("balance", member.Balance).Error; err != nil {
-			return err
+		if status == paymentconst.PaymentSuccess {
+			member.Balance -= inv.Amount
+			if err := tx.Model(&member).Update("balance", member.Balance).Error; err != nil {
+				return err
+			}
 		}
 
 		payment := model.PaymentTransaction{
@@ -86,8 +88,10 @@ func (r *repository) ProcessMemberBalancePayment(invoiceID string, internalTrans
 			return err
 		}
 
-		if err := tx.Model(&invoiceModel.Invoice{}).Where("id = ?", invoiceID).Update("status", invoiceconst.InvoicePaid).Error; err != nil {
-			return err
+		if status == paymentconst.PaymentSuccess {
+			if err := tx.Model(&invoiceModel.Invoice{}).Where("id = ?", invoiceID).Update("status", invoiceconst.InvoicePaid).Error; err != nil {
+				return err
+			}
 		}
 
 		return nil

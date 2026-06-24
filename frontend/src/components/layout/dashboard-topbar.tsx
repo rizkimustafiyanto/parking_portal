@@ -20,7 +20,7 @@ function DashboardTopbar({ homeHref, title, role }: DashboardTopbarProps) {
 
   function handleLogout() {
     logout()
-    window.location.href = "/login"
+    window.location.href = "/"
   }
 
   return (
