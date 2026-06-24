@@ -1,48 +1,89 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:16
+    container_name: portal-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: portal_digital
     ports:
-      - "${DB_PORT}:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d portal_digital"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - portal-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: portal-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - portal-network
 
   backend:
+    container_name: portal-backend
     build:
-      context: ./backend
+      context: ../backend
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      - postgres
-    environment:
-      APP_PORT: ${APP_PORT}
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_SSLMODE: ${DB_SSLMODE}
-      DB_TIMEZONE: ${DB_TIMEZONE}
-      DB_MAX_OPEN_CONNS: ${DB_MAX_OPEN_CONNS}
-      DB_MAX_IDLE_CONNS: ${DB_MAX_IDLE_CONNS}
-      CORS_ORIGINS: ${CORS_ORIGINS}
-      JWT_SECRET: ${JWT_SECRET}
-      AUTO_MIGRATE: ${AUTO_MIGRATE}
-      SEED_DATABASE: ${SEED_DATABASE}
-      SEED_ADMIN_NAME: ${SEED_ADMIN_NAME}
-      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL}
-      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
-      SEED_ADMIN_ROLE: ${SEED_ADMIN_ROLE}
-      UPLOAD_DIR: ${UPLOAD_DIR:-/app/uploads}
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+      - ../backend/.env
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+      - "8100:8100"
     volumes:
       - uploads_data:/app/uploads
+    networks:
+      - portal-network
+
+  frontend:
+    container_name: portal-frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8100
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8100
+    ports:
+      - "3000:3000"
+    networks:
+      - portal-network
 
 volumes:
   postgres_data:
+  rabbitmq_data:
   uploads_data:
+
+networks:
+  portal-network:
+    driver: bridge
