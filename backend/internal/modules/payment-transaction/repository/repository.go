@@ -61,33 +61,55 @@ func (r *repository) ProcessMemberBalancePayment(invoiceID string, internalTrans
 			return fmt.Errorf("payment amount must match invoice amount")
 		}
 
-		if member.Balance < inv.Amount {
+		if status == paymentconst.PaymentSuccess && member.Balance < inv.Amount {
 			return fmt.Errorf("insufficient member balance")
 		}
 
-		member.Balance -= inv.Amount
-		if err := tx.Model(&member).Update("balance", member.Balance).Error; err != nil {
-			return err
+		if status == paymentconst.PaymentSuccess {
+			member.Balance -= inv.Amount
+			if err := tx.Model(&member).Update("balance", member.Balance).Error; err != nil {
+				return err
+			}
 		}
 
-		payment := model.PaymentTransaction{
-			BaseModel: dbmodel.BaseModel{
-				ID: uuid.New(),
-			},
-			InvoiceID:             inv.ID,
-			InternalTransactionID: internalTransactionID,
-			Amount:                inv.Amount,
-			Status:                status,
-			Scenario:              scenario,
-			PaidAt:                paidAt,
+		var payment model.PaymentTransaction
+		err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("invoice_id = ?", inv.ID).First(&payment).Error
+		if err != nil {
+			if err != gorm.ErrRecordNotFound {
+				return err
+			}
+
+			payment = model.PaymentTransaction{
+				BaseModel: dbmodel.BaseModel{
+					ID: uuid.New(),
+				},
+				InvoiceID:             inv.ID,
+				InternalTransactionID: internalTransactionID,
+				Amount:                inv.Amount,
+				Status:                status,
+				Scenario:              scenario,
+				PaidAt:                paidAt,
+			}
+
+			if err := tx.Create(&payment).Error; err != nil {
+				return err
+			}
+		} else {
+			payment.InternalTransactionID = internalTransactionID
+			payment.Amount = inv.Amount
+			payment.Status = status
+			payment.Scenario = scenario
+			payment.PaidAt = paidAt
+
+			if err := tx.Save(&payment).Error; err != nil {
+				return err
+			}
 		}
 
-		if err := tx.Create(&payment).Error; err != nil {
-			return err
-		}
-
-		if err := tx.Model(&invoiceModel.Invoice{}).Where("id = ?", invoiceID).Update("status", invoiceconst.InvoicePaid).Error; err != nil {
-			return err
+		if status == paymentconst.PaymentSuccess {
+			if err := tx.Model(&invoiceModel.Invoice{}).Where("id = ?", invoiceID).Update("status", invoiceconst.InvoicePaid).Error; err != nil {
+				return err
+			}
 		}
 
 		return nil

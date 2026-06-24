@@ -5,35 +5,49 @@ import { useEffect, useMemo, useState } from "react"
 import { BadgeCheckIcon, FileTextIcon, HeartHandshakeIcon, UserRoundIcon } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LoadingState } from "@/components/ui/loading-state"
 import { cn } from "@/lib/utils"
 import { getStoredUserId } from "@/features/auth"
-import { fetchMemberBalanceHistory, fetchMemberInvoices, type InvoiceRecord } from "@/features/finance"
+import { createPayment, fetchMemberBalanceHistory, fetchMemberInvoices, type InvoiceRecord, type PaymentScenario } from "@/features/finance"
 
-const stats = [
-  { label: "Status aktif", value: "Aman", icon: BadgeCheckIcon },
-  { label: "Riwayat terbaru", value: "5", icon: FileTextIcon },
-  { label: "Poin layanan", value: "92", icon: HeartHandshakeIcon },
-]
+type OverviewState = {
+  loading: boolean
+  error: string | null
+  invoices: InvoiceRecord[]
+  history: InvoiceRecord[]
+}
+
+const initialState: OverviewState = {
+  loading: true,
+  error: null,
+  invoices: [],
+  history: [],
+}
 
 export default function MemberDashboardPage() {
   const memberId = getStoredUserId()
-  const [invoices, setInvoices] = useState<InvoiceRecord[]>([])
-  const [history, setHistory] = useState<InvoiceRecord[]>([])
-  const [loading, setLoading] = useState(Boolean(memberId))
-  const [error, setError] = useState<string | null>(null)
+  const [overview, setOverview] = useState<OverviewState>(initialState)
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState("")
+  const [scenario, setScenario] = useState<PaymentScenario>("SUCCESS")
+  const [paymentBusy, setPaymentBusy] = useState(false)
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!memberId) {
+      setOverview((current) => ({
+        ...current,
+        loading: false,
+        error: "User ID tidak ditemukan di token. Silakan login ulang.",
+      }))
       return
     }
 
     let active = true
 
     void (async () => {
-      setLoading(true)
-      setError(null)
+      setOverview((current) => ({ ...current, loading: true, error: null }))
+
       try {
         const [invoiceRes, historyRes] = await Promise.all([
           fetchMemberInvoices(memberId),
@@ -44,15 +58,19 @@ export default function MemberDashboardPage() {
           return
         }
 
-        setInvoices(invoiceRes.data ?? [])
-        setHistory(historyRes.data ?? [])
+        setOverview({
+          loading: false,
+          error: null,
+          invoices: invoiceRes.data ?? [],
+          history: historyRes.data ?? [],
+        })
       } catch (err) {
         if (active) {
-          setError(err instanceof Error ? err.message : "Gagal memuat data member")
-        }
-      } finally {
-        if (active) {
-          setLoading(false)
+          setOverview((current) => ({
+            ...current,
+            loading: false,
+            error: err instanceof Error ? err.message : "Gagal memuat data member",
+          }))
         }
       }
     })()
@@ -64,157 +82,271 @@ export default function MemberDashboardPage() {
 
   const summary = useMemo(
     () => ({
-      totalInvoices: invoices.length,
-      paid: invoices.filter((item) => item.status === "PAID").length,
-      pending: invoices.filter((item) => item.status === "PENDING").length,
+      totalInvoices: overview.invoices.length,
+      paid: overview.invoices.filter((item) => item.status === "PAID").length,
+      pending: overview.invoices.filter((item) => item.status === "PENDING").length,
+      latestPayment: overview.history.find((item) => item.payment?.status) ?? null,
     }),
-    [invoices]
+    [overview.history, overview.invoices]
   )
+
+  const stats = [
+    { label: "Total invoice", value: summary.totalInvoices, icon: FileTextIcon },
+    { label: "Invoice paid", value: summary.paid, icon: BadgeCheckIcon },
+    { label: "Invoice pending", value: summary.pending, icon: HeartHandshakeIcon },
+  ]
+
+  const pendingInvoices = overview.invoices.filter((item) => item.status === "PENDING")
+
+  async function submitPayment(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!memberId) {
+      setPaymentMessage("User ID tidak ditemukan. Silakan login ulang.")
+      return
+    }
+
+    const invoice = overview.invoices.find((item) => item.id === selectedInvoiceId)
+    if (!invoice) {
+      setPaymentMessage("Pilih invoice yang akan dibayar.")
+      return
+    }
+
+    setPaymentBusy(true)
+    setPaymentMessage(null)
+    try {
+      await createPayment({
+        invoice_id: invoice.id,
+        amount: invoice.amount ?? 0,
+        scenario,
+        paid_at: new Date().toISOString(),
+      })
+
+      setPaymentMessage(`Payment diproses dengan scenario ${scenario}.`)
+      const [invoiceRes, historyRes] = await Promise.all([
+        fetchMemberInvoices(memberId),
+        fetchMemberBalanceHistory(memberId),
+      ])
+
+      setOverview({
+        loading: false,
+        error: null,
+        invoices: invoiceRes.data ?? [],
+        history: historyRes.data ?? [],
+      })
+    } catch (err) {
+      setPaymentMessage(err instanceof Error ? err.message : "Gagal memproses payment")
+    } finally {
+      setPaymentBusy(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.16),transparent_35%),linear-gradient(180deg,#f8fafc_0%,#ecfeff_100%)] px-4 py-8 dark:bg-[radial-gradient(circle_at_top,rgba(20,184,166,0.18),transparent_35%),linear-gradient(180deg,#020617_0%,#064e3b_100%)]">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        {!memberId ? (
-          <Card className="rounded-3xl border-emerald-100 bg-white p-8 shadow-xl dark:border-emerald-900/30 dark:bg-slate-900">
-            <CardHeader className="p-0">
-              <CardDescription>Member / User</CardDescription>
-              <CardTitle className="text-2xl">Login ulang diperlukan</CardTitle>
-              <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-                User ID tidak ditemukan di token. Silakan login ulang untuk melihat data member kamu.
-              </p>
-            </CardHeader>
-          </Card>
-        ) : null}
-
         <div className="rounded-3xl border border-emerald-100 bg-white p-8 shadow-xl dark:border-emerald-900/30 dark:bg-slate-900">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="mb-3 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                 Member / User
               </div>
-              <h1 className="text-3xl font-semibold text-slate-950 dark:text-white">Selamat datang, Member</h1>
+              <h1 className="text-3xl font-semibold text-slate-950 dark:text-white">Overview Member</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                Lihat ringkasan status, riwayat, dan informasi penting dalam satu tempat yang ringan.
+                Ringkasan invoice, status pembayaran, dan histori saldo milik akun kamu.
               </p>
             </div>
-            <Link
-              href="/dashboard"
-              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "rounded-full px-5")}
-            >
+            <Link href="/dashboard" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "rounded-full px-5")}>
               Kembali ke pemilih dashboard
             </Link>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          {stats.map((item) => {
-            const Icon = item.icon
-            return (
-              <Card key={item.label} className="rounded-3xl border-emerald-100 bg-white/90 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/90">
-                <CardHeader className="space-y-4 p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex size-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                      <Icon className="size-5" />
-                    </div>
-                    <UserRoundIcon className="size-4 text-slate-400" />
-                  </div>
-                  <div>
-                    <CardDescription>{item.label}</CardDescription>
-                    <CardTitle className="mt-1 text-3xl">{item.value}</CardTitle>
-                  </div>
+        {overview.loading ? <LoadingState rows={4} /> : null}
+        {overview.error ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+            {overview.error}
+          </div>
+        ) : null}
+
+        {!overview.loading && !overview.error ? (
+          <>
+            <div className="grid gap-4 md:grid-cols-3">
+              {stats.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Card key={item.label} className="rounded-3xl border-emerald-100 bg-white/90 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/90">
+                    <CardHeader className="space-y-4 p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex size-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                          <Icon className="size-5" />
+                        </div>
+                        <UserRoundIcon className="size-4 text-slate-400" />
+                      </div>
+                      <div>
+                        <CardDescription>{item.label}</CardDescription>
+                        <CardTitle className="mt-1 text-3xl">{item.value}</CardTitle>
+                      </div>
+                    </CardHeader>
+                  </Card>
+                )
+              })}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="rounded-3xl border-emerald-100 bg-white/90 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/90">
+                <CardHeader className="p-6">
+                  <CardDescription>Latest payment status</CardDescription>
+                  <CardTitle className="mt-1 text-3xl">
+                    {summary.latestPayment?.payment?.status ?? summary.latestPayment?.status ?? "-"}
+                  </CardTitle>
                 </CardHeader>
               </Card>
-            )
-          })}
-        </div>
+              <Card className="rounded-3xl border-emerald-100 bg-white/90 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/90">
+                <CardHeader className="p-6">
+                  <CardDescription>Balance history</CardDescription>
+                  <CardTitle className="mt-1 text-3xl">{overview.history.length}</CardTitle>
+                </CardHeader>
+              </Card>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="rounded-3xl border-emerald-100 bg-white/90 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/90">
-            <CardHeader className="p-6">
-              <CardDescription>Invoices</CardDescription>
-              <CardTitle className="mt-1 text-3xl">{summary.totalInvoices}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="rounded-3xl border-emerald-100 bg-white/90 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/90">
-            <CardHeader className="p-6">
-              <CardDescription>Paid</CardDescription>
-              <CardTitle className="mt-1 text-3xl">{summary.paid}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="rounded-3xl border-emerald-100 bg-white/90 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/90">
-            <CardHeader className="p-6">
-              <CardDescription>Pending</CardDescription>
-              <CardTitle className="mt-1 text-3xl">{summary.pending}</CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-2">
-          <Card className="rounded-3xl border-emerald-100 bg-white/95 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/95">
-            <CardHeader className="p-6">
-              <CardDescription>Member / User</CardDescription>
-              <CardTitle className="text-2xl">Invoice Terbaru</CardTitle>
-              <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-                Ringkasan tagihan yang terhubung ke pelanggaran kamu.
-              </p>
-            </CardHeader>
-            <div className="px-6 pb-6">
-              {loading ? <LoadingState rows={3} /> : null}
-              {!loading && error ? <p className="text-sm text-red-600">{error}</p> : null}
-              {!loading && !error && invoices.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-emerald-100 p-4 text-sm text-slate-500 dark:border-emerald-900/30">
-                  Belum ada invoice.
-                </div>
-              ) : null}
-              {!loading && !error && invoices.length > 0 ? (
-                <div className="space-y-3">
-                  {invoices.slice(0, 5).map((item) => (
-                    <div key={item.id} className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 dark:border-emerald-900/30 dark:bg-slate-800/60">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-medium text-slate-950 dark:text-white">{item.violation?.plate_number}</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">{item.violation?.location}</p>
+            <div className="grid gap-6 xl:grid-cols-2">
+              <Card className="rounded-3xl border-emerald-100 bg-white/95 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/95">
+                <CardHeader className="p-6">
+                  <CardDescription>Member / User</CardDescription>
+                  <CardTitle className="text-2xl">Invoice Terbaru</CardTitle>
+                  <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Tagihan yang terhubung ke akun kamu.
+                  </p>
+                </CardHeader>
+                <CardContent className="px-6 pb-6">
+                  {overview.invoices.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-emerald-100 p-4 text-sm text-slate-500 dark:border-emerald-900/30">
+                      Belum ada invoice.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {overview.invoices.slice(0, 5).map((item) => (
+                        <div key={item.id} className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 dark:border-emerald-900/30 dark:bg-slate-800/60">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="font-medium text-slate-950 dark:text-white">{item.violation?.plate_number ?? "-"}</p>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">{item.violation?.location ?? "-"}</p>
+                            </div>
+                            <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+                              {item.status ?? "-"}
+                            </span>
+                          </div>
+                          <div className="mt-3 grid gap-2 text-sm text-slate-600 dark:text-slate-300 md:grid-cols-2">
+                            <p>Amount: {item.amount ?? "-"}</p>
+                            <p>Payment: {item.payment?.status ?? "-"}</p>
+                          </div>
                         </div>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-900 dark:text-slate-300">
-                          {item.status}
-                        </span>
-                      </div>
-                      <div className="mt-3 grid gap-2 text-sm text-slate-600 dark:text-slate-300 md:grid-cols-2">
-                        <p>Amount: {item.amount}</p>
-                        <p>Payment: {item.payment?.status ?? "-"}</p>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </Card>
+                  )}
+                </CardContent>
+              </Card>
 
-          <Card className="rounded-3xl border-emerald-100 bg-white/95 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/95">
-            <CardHeader className="p-6">
-              <CardDescription>Member / User</CardDescription>
-              <CardTitle className="text-2xl">Balance History</CardTitle>
-              <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-                Riwayat perubahan saldo dan pembayaran dari akun kamu.
-              </p>
-            </CardHeader>
-            <div className="px-6 pb-6">
-              {loading ? <LoadingState rows={3} /> : null}
-              {!loading && !error && history.length > 0 ? (
-                <div className="space-y-3">
-                  {history.slice(0, 5).map((item) => (
-                    <div key={item.id} className="rounded-2xl border border-emerald-100 bg-white p-4 dark:border-emerald-900/30 dark:bg-slate-800/60">
-                      <p className="font-medium text-slate-950 dark:text-white">{item.violation?.plate_number}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{item.status} - {item.payment?.status ?? "-"}</p>
-                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Amount: {item.amount}</p>
+              <Card className="rounded-3xl border-emerald-100 bg-white/95 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/95">
+                <CardHeader className="p-6">
+                  <CardDescription>Member / User</CardDescription>
+                  <CardTitle className="text-2xl">Balance History</CardTitle>
+                  <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Riwayat pembayaran dan perubahan status invoice.
+                  </p>
+                </CardHeader>
+                <CardContent className="px-6 pb-6">
+                  {overview.history.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-emerald-100 p-4 text-sm text-slate-500 dark:border-emerald-900/30">
+                      Belum ada history saldo.
                     </div>
-                  ))}
-                </div>
-              ) : null}
+                  ) : (
+                    <div className="space-y-3">
+                      {overview.history.slice(0, 5).map((item) => (
+                        <div key={item.id} className="rounded-2xl border border-emerald-100 bg-white p-4 dark:border-emerald-900/30 dark:bg-slate-800/60">
+                          <p className="font-medium text-slate-950 dark:text-white">{item.violation?.plate_number ?? "-"}</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {item.status ?? "-"} - {item.payment?.status ?? "-"}
+                          </p>
+                          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Amount: {item.amount ?? "-"}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
-          </Card>
-        </div>
+
+            <Card className="rounded-3xl border-emerald-100 bg-white/95 shadow-lg dark:border-emerald-900/30 dark:bg-slate-900/95">
+              <CardHeader className="p-6">
+                <CardDescription>Member / User</CardDescription>
+                <CardTitle className="text-2xl">Bayar Invoice</CardTitle>
+                <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  Pilih invoice yang masih pending lalu tentukan scenario untuk mensimulasikan hasil payment.
+                </p>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <form className="grid gap-4 md:grid-cols-2" onSubmit={submitPayment}>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Invoice</label>
+                    <select
+                      value={selectedInvoiceId}
+                      onChange={(e) => setSelectedInvoiceId(e.target.value)}
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                      required
+                    >
+                      <option value="">Pilih invoice pending</option>
+                      {pendingInvoices.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.id} - {item.violation?.plate_number ?? "-"} - {item.amount ?? 0}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Scenario</label>
+                    <select
+                      value={scenario}
+                      onChange={(e) => setScenario(e.target.value as PaymentScenario)}
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      <option value="SUCCESS">SUCCESS</option>
+                      <option value="FAILURE">FAILURE</option>
+                      <option value="TIMEOUT">TIMEOUT</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <div className="rounded-2xl border border-dashed border-emerald-100 bg-emerald-50/50 p-4 text-sm text-slate-600 dark:border-emerald-900/30 dark:bg-slate-800/60 dark:text-slate-300">
+                      Amount akan diambil dari invoice terpilih: <span className="font-medium">{textOrDash(overview.invoices.find((item) => item.id === selectedInvoiceId)?.amount ?? "-")}</span>
+                    </div>
+                  </div>
+                  {paymentMessage ? (
+                    <div className="md:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
+                      {paymentMessage}
+                    </div>
+                  ) : null}
+                  <div className="md:col-span-2">
+                    <button
+                      type="submit"
+                      disabled={paymentBusy}
+                      className="inline-flex h-10 items-center justify-center rounded-md bg-emerald-600 px-4 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {paymentBusy ? "Memproses..." : "Bayar sekarang"}
+                    </button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </>
+        ) : null}
       </div>
     </div>
   )
+}
+
+function textOrDash(value: string | number | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "-"
+  }
+
+  return value && value.trim() ? value : "-"
 }

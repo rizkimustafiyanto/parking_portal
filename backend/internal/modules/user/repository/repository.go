@@ -6,6 +6,8 @@ import (
 
 	"backend/internal/modules/user/model"
 	"backend/pkg/dto"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm/clause"
 
 	"gorm.io/gorm"
@@ -123,9 +125,27 @@ func (r *repository) FindAll(query dto.PaginationDTO, search string, role string
 
 	if trimmedSearch := strings.TrimSpace(search); trimmedSearch != "" {
 		pattern := "%" + trimmedSearch + "%"
-		db = db.Where("name ILIKE ? OR email ILIKE ?", pattern, pattern)
-	}
 
+		query := db
+
+		if _, err := uuid.Parse(trimmedSearch); err == nil {
+			query = query.Where(
+				"id = ? OR name ILIKE ? OR email ILIKE ?",
+				trimmedSearch,
+				pattern,
+				pattern,
+			)
+		} else {
+			query = query.Where(
+				"name ILIKE ? OR email ILIKE ?",
+				pattern,
+				pattern,
+			)
+		}
+
+		db = query
+	}
+	
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}

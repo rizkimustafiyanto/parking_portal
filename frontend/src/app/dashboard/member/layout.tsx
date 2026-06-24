@@ -1,10 +1,11 @@
-import { BellIcon, HomeIcon, ReceiptTextIcon, WalletCardsIcon } from "lucide-react"
+import { BellIcon, HomeIcon, ReceiptTextIcon, UserRoundIcon, WalletCardsIcon } from "lucide-react"
 
 import { DashboardShell } from "@/components/layout/dashboard-shell"
 import { RoleGuard } from "@/features/auth"
 
 const navItems = [
   { label: "Overview", href: "/dashboard/member", icon: HomeIcon },
+  { label: "Profile", href: "/dashboard/member/profile", icon: UserRoundIcon },
   { label: "Invoices", href: "/dashboard/member/history", icon: ReceiptTextIcon },
   { label: "Payments", href: "/dashboard/member/notifications", icon: WalletCardsIcon },
   { label: "Support", href: "/dashboard/member/support", icon: BellIcon },
@@ -18,6 +19,7 @@ export default function MemberDashboardLayout({
   return (
     <RoleGuard role="member">
       <DashboardShell
+        role="member"
         title="Member Workspace"
         subtitle="Area personal untuk user dan member melihat status, riwayat, dan info penting."
         badge="Member / User"

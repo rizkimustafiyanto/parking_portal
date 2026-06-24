@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useSyncExternalStore } from "react"
 import { useRouter } from "next/navigation"
 
 import { LoadingState } from "@/components/ui/loading-state"
@@ -14,11 +14,13 @@ type RoleGuardProps = {
 
 function RoleGuard({ role, children }: RoleGuardProps) {
   const router = useRouter()
-  const [isMounted, setIsMounted] = useState(false)
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
 
   useEffect(() => {
-    setIsMounted(true)
-
     const token = getStoredToken()
     const storedRole = getStoredRole()
 

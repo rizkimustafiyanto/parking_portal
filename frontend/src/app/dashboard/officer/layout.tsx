@@ -21,6 +21,7 @@ export default function OfficerDashboardLayout({
   return (
     <RoleGuard role="officer">
       <DashboardShell
+        role="officer"
         title="Officer Workspace"
         subtitle="Area kerja untuk admin dan officer yang menangani operasional portal."
         badge="Officer / Admin"

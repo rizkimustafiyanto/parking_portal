@@ -283,12 +283,13 @@ export default function OfficerViolationsPage() {
           </form>
 
           <ListTable
+            headers={["Code", "Name", "Base Amount", "Aksi"]}
             items={violationTypes.items}
             renderRow={(item) => (
               <>
-                <td className="px-3 py-3 font-medium">{item.code}</td>
-                <td className="px-3 py-3">{item.name}</td>
-                <td className="px-3 py-3">{money.format(item.base_amount)}</td>
+                <td className="px-3 py-3 font-medium">{textOrDash(item.code)}</td>
+                <td className="px-3 py-3">{textOrDash(item.name)}</td>
+                <td className="px-3 py-3">{item.base_amount ? money.format(item.base_amount) : "-"}</td>
                 <td className="px-3 py-3">
                   <Button type="button" variant="destructive" size="sm" loading={busy === item.id} onClick={() => void submitAndReload(item.id, () => deleteViolationType(item.id))}>
                     <Trash2Icon className="size-4" />
@@ -340,12 +341,13 @@ export default function OfficerViolationsPage() {
             </Button>
           </form>
           <ListTable
+            headers={["Version", "Status", "Publisher", "Aksi"]}
             items={ruleVersions.items}
             renderRow={(item) => (
               <>
-                <td className="px-3 py-3 font-medium">{item.version_number}</td>
+                <td className="px-3 py-3 font-medium">{textOrDash(String(item.version_number))}</td>
                 <td className="px-3 py-3">{item.is_active ? "Aktif" : "Nonaktif"}</td>
-                <td className="px-3 py-3">{item.publish?.name}</td>
+                <td className="px-3 py-3">{textOrDash(item.publish?.name)}</td>
                 <td className="px-3 py-3">
                   <Button type="button" variant="destructive" size="sm" loading={busy === item.id} onClick={() => void submitAndReload(item.id, () => deleteFineRuleVersion(item.id))}>
                     <Trash2Icon className="size-4" />
@@ -394,13 +396,14 @@ export default function OfficerViolationsPage() {
             </Button>
           </form>
           <ListTable
+            headers={["Version ID", "Type", "Key", "Value", "Aksi"]}
             items={ruleDetails.items}
             renderRow={(item) => (
               <>
-                <td className="px-3 py-3 font-medium">{item.rule_version_id}</td>
-                <td className="px-3 py-3">{item.rule_type}</td>
-                <td className="px-3 py-3">{item.key}</td>
-                <td className="px-3 py-3">{item.value}</td>
+                <td className="px-3 py-3 font-medium">{textOrDash(item.rule_version_id)}</td>
+                <td className="px-3 py-3">{textOrDash(item.rule_type)}</td>
+                <td className="px-3 py-3">{textOrDash(item.key)}</td>
+                <td className="px-3 py-3">{textOrDash(item.value)}</td>
                 <td className="px-3 py-3">
                   <Button type="button" variant="destructive" size="sm" loading={busy === item.id} onClick={() => void submitAndReload(item.id, () => deleteFineRuleDetail(item.id))}>
                     <Trash2Icon className="size-4" />
@@ -460,13 +463,14 @@ export default function OfficerViolationsPage() {
             </Button>
           </form>
           <ListTable
+            headers={["Plate", "Type", "Location", "Officer", "Aksi"]}
             items={violations.items}
             renderRow={(item) => (
               <>
-                <td className="px-3 py-3 font-medium">{item.plate_number}</td>
-                <td className="px-3 py-3">{item.violation_type_code}</td>
-                <td className="px-3 py-3">{item.location}</td>
-                <td className="px-3 py-3">{item.officer?.name}</td>
+                <td className="px-3 py-3 font-medium">{textOrDash(item.plate_number)}</td>
+                <td className="px-3 py-3">{textOrDash(item.violation_type_code)}</td>
+                <td className="px-3 py-3">{textOrDash(item.location)}</td>
+                <td className="px-3 py-3">{textOrDash(item.officer?.name)}</td>
                 <td className="px-3 py-3">
                   <Button type="button" variant="destructive" size="sm" loading={busy === item.id} onClick={() => void submitAndReload(item.id, () => deleteViolation(item.id))}>
                     <Trash2Icon className="size-4" />
@@ -540,9 +544,11 @@ function MasterCard({
 }
 
 function ListTable<T>({
+  headers,
   items,
   renderRow,
 }: {
+  headers: string[]
   items: T[]
   renderRow: (item: T) => React.ReactNode
 }) {
@@ -555,11 +561,11 @@ function ListTable<T>({
       <table className="min-w-full text-left text-sm">
         <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900">
           <tr className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800/60">
-            <td className="px-3 py-3">Data</td>
-            <td className="px-3 py-3">Data</td>
-            <td className="px-3 py-3">Data</td>
-            <td className="px-3 py-3">Data</td>
-            <td className="px-3 py-3">Aksi</td>
+            {headers.map((header) => (
+              <td key={header} className="px-3 py-3">
+                {header}
+              </td>
+            ))}
           </tr>
           {items.map((item, index) => (
             <tr key={index}>{renderRow(item)}</tr>
@@ -568,4 +574,8 @@ function ListTable<T>({
       </table>
     </div>
   )
+}
+
+function textOrDash(value: string | null | undefined) {
+  return value && value.trim() ? value : "-"
 }

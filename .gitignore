@@ -33,7 +33,7 @@ tmp/
 *.postman_variables.json
 
 # ERD Drawio
-.$ERD.drawio**
+.$**.drawio**
 
 # Go
 *.exe

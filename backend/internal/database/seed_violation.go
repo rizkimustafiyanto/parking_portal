@@ -1,7 +1,6 @@
 package database
 
 import (
-	"errors"
 	"time"
 
 	commonmodel "backend/internal/common/model"
@@ -21,11 +20,12 @@ func seedViolationData(db *gorm.DB, admin *usermodel.User) error {
 }
 
 func seedFineRuleVersion(db *gorm.DB, admin *usermodel.User) error {
-	var existing violationmodel.FineRuleVersion
-	if err := db.Where("version_number = ?", 1).First(&existing).Error; err == nil {
-		return nil
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+	var existingCount int64
+	if err := db.Model(&violationmodel.FineRuleVersion{}).Where("version_number = ?", 1).Count(&existingCount).Error; err != nil {
 		return err
+	}
+	if existingCount > 0 {
+		return nil
 	}
 
 	version := violationmodel.FineRuleVersion{
@@ -55,11 +55,20 @@ func seedFineRuleVersion(db *gorm.DB, admin *usermodel.User) error {
 }
 
 func seedViolation(db *gorm.DB, admin *usermodel.User) error {
-	var existing violationmodel.Violation
-	if err := db.Where("plate_number = ?", "B 1234 CD").First(&existing).Error; err == nil {
-		return nil
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+	var existingCount int64
+	if err := db.Model(&violationmodel.Violation{}).Where("plate_number = ?", "B 1234 CD").Count(&existingCount).Error; err != nil {
 		return err
+	}
+	if existingCount > 0 {
+		return nil
+	}
+
+	var versionCount int64
+	if err := db.Model(&violationmodel.FineRuleVersion{}).Where("version_number = ?", 1).Count(&versionCount).Error; err != nil {
+		return err
+	}
+	if versionCount == 0 {
+		return nil
 	}
 
 	var version violationmodel.FineRuleVersion

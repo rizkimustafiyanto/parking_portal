@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"backend/internal/middleware"
 	"backend/internal/modules/payment-transaction/dto"
 	"backend/internal/modules/payment-transaction/service"
 	pagedto "backend/pkg/dto"
@@ -27,7 +28,7 @@ func (h *Handler) Create(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Create(req); err != nil {
+	if err := h.service.Create(middleware.GetUserID(c), middleware.GetRole(c), req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}

@@ -348,11 +348,11 @@ export default function OfficerMembersPage() {
                       {users.map((user) => (
                         <tr key={user.id} className="align-top">
                           <td className="px-4 py-4">
-                            <div className="font-medium text-slate-950 dark:text-white">{user.name}</div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">{user.id}</div>
+                            <div className="font-medium text-slate-950 dark:text-white">{textOrDash(user.name)}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">{textOrDash(user.id)}</div>
                           </td>
-                          <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{user.email}</td>
-                          <td className="px-4 py-4 capitalize text-slate-600 dark:text-slate-300">{user.role}</td>
+                          <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{textOrDash(user.email)}</td>
+                          <td className="px-4 py-4 capitalize text-slate-600 dark:text-slate-300">{textOrDash(user.role)}</td>
                           <td className="px-4 py-4 text-slate-600 dark:text-slate-300">
                             {currency.format(user.balance ?? 0)}
                           </td>
@@ -407,4 +407,8 @@ export default function OfficerMembersPage() {
       </div>
     </div>
   )
+}
+
+function textOrDash(value: string | null | undefined) {
+  return value && value.trim() ? value : "-"
 }

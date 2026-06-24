@@ -22,9 +22,7 @@ export default function OfficerPaymentsPage() {
   const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null)
   const [form, setForm] = useState({
     invoice_id: "",
-    internal_transaction_id: "",
     amount: "0",
-    status: "SUCCESS",
     scenario: "SUCCESS",
     paid_at: "",
   })
@@ -96,9 +94,7 @@ export default function OfficerPaymentsPage() {
     try {
       const payload = {
         invoice_id: form.invoice_id,
-        internal_transaction_id: form.internal_transaction_id,
         amount: Number(form.amount),
-        status: form.status,
         scenario: form.scenario,
         paid_at: new Date(form.paid_at).toISOString(),
       }
@@ -113,9 +109,7 @@ export default function OfficerPaymentsPage() {
       setEditingId(null)
       setForm({
         invoice_id: "",
-        internal_transaction_id: "",
         amount: "0",
-        status: "SUCCESS",
         scenario: "SUCCESS",
         paid_at: "",
       })
@@ -132,9 +126,7 @@ export default function OfficerPaymentsPage() {
     setEditingId(item.id)
     setForm({
       invoice_id: item.invoice_id,
-      internal_transaction_id: item.internal_transaction_id,
       amount: String(item.amount),
-      status: item.status,
       scenario: item.scenario,
       paid_at: item.paid_at.slice(0, 19),
     })
@@ -189,13 +181,7 @@ export default function OfficerPaymentsPage() {
                   </option>
                 ))}
               </select>
-              <Input value={form.internal_transaction_id} onChange={(e) => setForm((current) => ({ ...current, internal_transaction_id: e.target.value }))} placeholder="Internal transaction id" required />
               <Input value={form.amount} onChange={(e) => setForm((current) => ({ ...current, amount: e.target.value }))} type="number" min="0" placeholder="Amount" />
-              <select value={form.status} onChange={(e) => setForm((current) => ({ ...current, status: e.target.value }))} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
-                <option value="SUCCESS">SUCCESS</option>
-                <option value="PENDING">PENDING</option>
-                <option value="FAILED">FAILED</option>
-              </select>
               <select value={form.scenario} onChange={(e) => setForm((current) => ({ ...current, scenario: e.target.value }))} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
                 <option value="SUCCESS">SUCCESS</option>
                 <option value="FAILURE">FAILURE</option>
@@ -250,12 +236,14 @@ export default function OfficerPaymentsPage() {
                     {items.map((item) => (
                       <tr key={item.id}>
                         <td className="px-3 py-3">
-                          <div className="font-medium">{item.internal_transaction_id}</div>
-                          <div className="text-xs text-slate-500">{item.status} / {item.scenario}</div>
+                          <div className="font-medium">{textOrDash(item.internal_transaction_id)}</div>
+                          <div className="text-xs text-slate-500">
+                            {textOrDash(item.status)} / {textOrDash(item.scenario)}
+                          </div>
                         </td>
-                        <td className="px-3 py-3">{item.invoice_id}</td>
-                        <td className="px-3 py-3">{item.amount}</td>
-                        <td className="px-3 py-3">{item.paid_at}</td>
+                        <td className="px-3 py-3">{textOrDash(item.invoice_id)}</td>
+                        <td className="px-3 py-3">{item.amount ?? "-"}</td>
+                        <td className="px-3 py-3">{textOrDash(item.paid_at)}</td>
                         <td className="px-3 py-3">
                           <div className="flex flex-wrap gap-2">
                             <Button type="button" variant="secondary" size="sm" onClick={() => setSelectedPayment(item)}>
@@ -292,12 +280,12 @@ export default function OfficerPaymentsPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               <DetailBlock label="Payment ID" value={selectedPayment.id} />
-              <DetailBlock label="Invoice ID" value={selectedPayment.invoice_id} />
-              <DetailBlock label="Internal transaction" value={selectedPayment.internal_transaction_id} />
-              <DetailBlock label="Amount" value={String(selectedPayment.amount)} />
-              <DetailBlock label="Status" value={selectedPayment.status} />
-              <DetailBlock label="Scenario" value={selectedPayment.scenario} />
-              <DetailBlock label="Paid at" value={selectedPayment.paid_at} />
+              <DetailBlock label="Invoice ID" value={textOrDash(selectedPayment.invoice_id)} />
+              <DetailBlock label="Internal transaction" value={textOrDash(selectedPayment.internal_transaction_id)} />
+              <DetailBlock label="Amount" value={String(selectedPayment.amount ?? "-")} />
+              <DetailBlock label="Status" value={textOrDash(selectedPayment.status)} />
+              <DetailBlock label="Scenario" value={textOrDash(selectedPayment.scenario)} />
+              <DetailBlock label="Paid at" value={textOrDash(selectedPayment.paid_at)} />
             </div>
           )}
         </CardContent>
@@ -322,4 +310,12 @@ function DetailBlock({ label, value }: { label: string; value: string }) {
       <p className="mt-2 break-words text-sm font-medium text-slate-950 dark:text-white">{value}</p>
     </div>
   )
+}
+
+function textOrDash(value: string | number | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "-"
+  }
+
+  return value && value.trim() ? value : "-"
 }

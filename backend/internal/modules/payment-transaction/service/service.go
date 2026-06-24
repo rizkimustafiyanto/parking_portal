@@ -5,8 +5,17 @@ import (
 	pagedto "backend/pkg/dto"
 )
 
+type ChargeResult struct {
+	Status        string
+	TransactionID string
+}
+
+type PaymentService interface {
+	Charge(invoiceID string, amount float64, scenario string) ChargeResult
+}
+
 type Service interface {
-	Create(req dto.CreatePaymentTransactionRequest) error
+	Create(actorUserID string, actorRole string, req dto.CreatePaymentTransactionRequest) error
 
 	GetByID(id string) (*dto.PaymentTransactionResponse, error)
 

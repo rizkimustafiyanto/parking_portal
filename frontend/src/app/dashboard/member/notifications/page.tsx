@@ -75,19 +75,19 @@ export default function MemberNotificationsPage() {
                   <div>
                     <p className="flex items-center gap-2 font-medium text-slate-950 dark:text-white">
                       <WalletCardsIcon className="size-4 text-emerald-600" />
-                      {item.violation?.plate_number}
+                      {textOrDash(item.violation?.plate_number)}
                     </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{item.violation?.location}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{textOrDash(item.violation?.location)}</p>
                   </div>
                   <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                     {item.payment?.status ?? item.status}
                   </span>
                 </div>
                 <div className="mt-3 grid gap-2 text-sm text-slate-600 dark:text-slate-300 md:grid-cols-2">
-                  <p>Amount: {item.amount}</p>
-                  <p>Invoice status: {item.status}</p>
-                  <p>Paid at: {item.payment?.paid_at ?? "-"}</p>
-                  <p>Transaction: {item.payment?.internal_transaction_id ?? "-"}</p>
+                  <p>Amount: {item.amount ?? "-"}</p>
+                  <p>Invoice status: {textOrDash(item.status)}</p>
+                  <p>Paid at: {textOrDash(item.payment?.paid_at)}</p>
+                  <p>Transaction: {textOrDash(item.payment?.internal_transaction_id)}</p>
                 </div>
               </div>
             ))}
@@ -96,4 +96,12 @@ export default function MemberNotificationsPage() {
       </CardContent>
     </Card>
   )
+}
+
+function textOrDash(value: string | number | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "-"
+  }
+
+  return value && value.trim() ? value : "-"
 }

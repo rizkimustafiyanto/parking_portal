@@ -1,59 +1,12 @@
 package database
 
 import (
-	"errors"
-	"fmt"
-	"strings"
-
-	commonmodel "backend/internal/common/model"
 	"backend/internal/config"
-	"backend/internal/modules/user/model"
-	"backend/pkg/password"
+	backendseed "backend/internal/database/seed"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 func Seed(db *gorm.DB, cfg *config.Config) error {
-	if !cfg.SeedDatabase {
-		return nil
-	}
-
-	var existing model.User
-	if err := db.Where("email = ?", cfg.SeedAdminEmail).First(&existing).Error; err == nil {
-		return nil
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return err
-	}
-
-	role := strings.TrimSpace(cfg.SeedAdminRole)
-	if role == "" {
-		role = "officer"
-	}
-
-	hashedPassword, err := password.Hash(cfg.SeedAdminPassword)
-	if err != nil {
-		return fmt.Errorf("hash seed password: %w", err)
-	}
-
-	user := model.User{
-		BaseModel: gormModelBase(),
-		Name:      cfg.SeedAdminName,
-		Email:     cfg.SeedAdminEmail,
-		Password:  hashedPassword,
-		Role:      role,
-		Balance:   0,
-	}
-
-	if err := db.Create(&user).Error; err != nil {
-		return err
-	}
-
-	return seedViolationData(db, &user)
-}
-
-func gormModelBase() commonmodel.BaseModel {
-	return commonmodel.BaseModel{
-		ID: uuid.New(),
-	}
+	return backendseed.Run(db, cfg)
 }

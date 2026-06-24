@@ -13,7 +13,7 @@ func Register(router *gin.RouterGroup, h *handler.Handler, jwtSecret string) {
 	{
 		payments.GET("", h.GetAll)
 		payments.GET("/:id", h.GetByID)
-		payments.POST("", middleware.Role("officer"), h.Create)
+		payments.POST("", h.Create)
 		payments.PUT("/:id", middleware.Role("officer"), h.Update)
 		payments.DELETE("/:id", middleware.Role("officer"), h.Delete)
 	}

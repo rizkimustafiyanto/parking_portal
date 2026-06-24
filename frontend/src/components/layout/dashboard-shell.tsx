@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import type { DashboardRole } from "@/features/realtime/types"
 import { cn } from "@/lib/utils"
 import { DashboardTopbar } from "./dashboard-topbar"
 
@@ -13,6 +14,7 @@ export type DashboardNavItem = {
 }
 
 type DashboardShellProps = {
+  role: DashboardRole
   title: string
   subtitle: string
   badge: string
@@ -23,6 +25,7 @@ type DashboardShellProps = {
 }
 
 function DashboardShell({
+  role,
   title,
   subtitle,
   badge,
@@ -36,7 +39,7 @@ function DashboardShell({
       <div className="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-[280px_1fr]">
         <aside className="space-y-4">
           <Card className="overflow-hidden rounded-3xl border-slate-200 bg-white/95 p-0 shadow-lg dark:border-slate-700 dark:bg-slate-900/95">
-            <div className={cn("h-2 bg-gradient-to-r", accentClassName)} />
+            <div className={cn("h-2 bg-linear-to-r", accentClassName)} />
             <div className="space-y-6 p-6">
               <div>
                 <div className="mb-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
@@ -71,7 +74,7 @@ function DashboardShell({
         </aside>
 
         <main className="space-y-6">
-          <DashboardTopbar homeHref={homeHref} title={title} />
+          <DashboardTopbar homeHref={homeHref} title={title} role={role} />
           {children}
         </main>
       </div>

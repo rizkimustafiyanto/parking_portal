@@ -285,14 +285,14 @@ export default function OfficerInvoicesPage() {
                 <table className="min-w-full text-left text-sm">
                   <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900">
                     {invoices.map((item) => (
-                      <tr key={item.id}>
-                        <td className="px-3 py-3">
-                          <div className="font-medium">{item.amount}</div>
-                          <div className="text-xs text-slate-500">{item.status}</div>
-                        </td>
-                        <td className="px-3 py-3">{item.member?.name}</td>
-                        <td className="px-3 py-3">{item.violation?.plate_number}</td>
-                        <td className="px-3 py-3">{item.payment?.status ?? "-"}</td>
+                        <tr key={item.id}>
+                          <td className="px-3 py-3">
+                          <div className="font-medium">{item.amount ?? "-"}</div>
+                          <div className="text-xs text-slate-500">{textOrDash(item.status)}</div>
+                          </td>
+                        <td className="px-3 py-3">{textOrDash(item.member?.name)}</td>
+                        <td className="px-3 py-3">{textOrDash(item.violation?.plate_number)}</td>
+                        <td className="px-3 py-3">{textOrDash(item.payment?.status)}</td>
                         <td className="px-3 py-3">
                           <div className="flex flex-wrap gap-2">
                             <Button type="button" variant="secondary" size="sm" onClick={() => void openDetail(item.id)}>
@@ -332,12 +332,12 @@ export default function OfficerInvoicesPage() {
           {selectedInvoice ? (
             <div className="grid gap-4 md:grid-cols-2">
               <DetailBlock label="Invoice ID" value={selectedInvoice.id} />
-              <DetailBlock label="Status" value={selectedInvoice.status} />
+              <DetailBlock label="Status" value={textOrDash(selectedInvoice.status)} />
               <DetailBlock label="Member" value={selectedInvoice.member?.name ?? "-"} />
               <DetailBlock label="Plate number" value={selectedInvoice.violation?.plate_number ?? "-"} />
               <DetailBlock label="Violation location" value={selectedInvoice.violation?.location ?? "-"} />
-              <DetailBlock label="Payment status" value={selectedInvoice.payment?.status ?? "-"} />
-              <DetailBlock label="Payment scenario" value={selectedInvoice.payment?.scenario ?? "-"} />
+              <DetailBlock label="Payment status" value={textOrDash(selectedInvoice.payment?.status)} />
+              <DetailBlock label="Payment scenario" value={textOrDash(selectedInvoice.payment?.scenario)} />
               <DetailBlock label="Fine rule version" value={String(selectedInvoice.violation?.fine_rule_version?.version_number ?? "-")} />
               <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
                 <p className="text-sm text-slate-500 dark:text-slate-400">Fine rule details</p>
@@ -369,4 +369,12 @@ function DetailBlock({ label, value }: { label: string; value: string }) {
       <p className="mt-2 break-words text-sm font-medium text-slate-950 dark:text-white">{value}</p>
     </div>
   )
+}
+
+function textOrDash(value: string | number | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "-"
+  }
+
+  return value && value.trim() ? value : "-"
 }
