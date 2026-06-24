@@ -68,9 +68,8 @@ export default function OfficerSettingsPage() {
                   onChange={(event) => setType(event.target.value)}
                   className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
-                  <option value="document">Document</option>
-                  <option value="profile">Profile</option>
-                  <option value="vehicle">Vehicle</option>
+                  <option value="profile_user">Profile</option>
+                  <option value="violation_photo">Violation</option>
                 </select>
               </div>
 
