@@ -1,0 +1,78 @@
+<mxfile host="Electron" agent="Codex">
+  <diagram id="backend-erd" name="ERD Backend">
+    <mxGraphModel dx="1548" dy="1048" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" value="users&#xa;- id (uuid)&#xa;- name&#xa;- email&#xa;- password&#xa;- role&#xa;- balance&#xa;- created_at&#xa;- updated_at&#xa;- deleted_at" vertex="1">
+          <mxGeometry height="220" width="240" x="40" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="violation_types&#xa;- id (uuid)&#xa;- code&#xa;- name&#xa;- base_amount&#xa;- created_by_id&#xa;- created_at&#xa;- updated_at&#xa;- deleted_at" vertex="1">
+          <mxGeometry height="220" width="250" x="340" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="fine_rule_versions&#xa;- id (uuid)&#xa;- version_number&#xa;- is_active&#xa;- published_by&#xa;- created_at&#xa;- updated_at&#xa;- deleted_at" vertex="1">
+          <mxGeometry height="210" width="250" x="640" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="fine_rule_details&#xa;- id (uuid)&#xa;- rule_version_id&#xa;- rule_type&#xa;- key&#xa;- value&#xa;- created_at&#xa;- updated_at&#xa;- deleted_at" vertex="1">
+          <mxGeometry height="210" width="250" x="1000" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" value="violations&#xa;- id (uuid)&#xa;- plate_number&#xa;- violation_type&#xa;- location&#xa;- occurred_at&#xa;- photo_url&#xa;- officer_id&#xa;- fine_rule_version_id&#xa;- created_at&#xa;- updated_at&#xa;- deleted_at" vertex="1">
+          <mxGeometry height="250" width="280" x="325" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;" value="invoices&#xa;- id (uuid)&#xa;- violation_id&#xa;- member_id&#xa;- amount&#xa;- status&#xa;- created_at&#xa;- updated_at&#xa;- deleted_at" vertex="1">
+          <mxGeometry height="230" width="250" x="710" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#cfe2f3;strokeColor=#3d85c6;fontSize=13;" value="payment_transactions&#xa;- id (uuid)&#xa;- invoice_id&#xa;- internal_transaction_id&#xa;- amount&#xa;- status&#xa;- scenario&#xa;- paid_at&#xa;- created_at&#xa;- updated_at&#xa;- deleted_at" vertex="1">
+          <mxGeometry height="260" width="300" x="1030" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="9" edge="1" parent="1" source="3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" target="2" value="Relationship">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="10" edge="1" parent="1" source="4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" target="2" value="Relationship">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="765" y="10" />
+              <mxPoint x="160" y="10" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="11" edge="1" parent="1" source="5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" target="4" value="Relationship">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="12" edge="1" parent="1" source="6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" target="2" value="Relationship">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="120" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="13" edge="1" parent="1" source="6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" target="3" value="Relationship">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="14" edge="1" parent="1" source="6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" target="4" value="Relationship">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="690" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="15" edge="1" parent="1" source="7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" target="6" value="Relationship">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="16" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" target="2" value="Relationship">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="835" y="700" />
+              <mxPoint x="170" y="700" />
+            </Array>
+            <mxPoint x="834.92" y="620" as="sourcePoint" />
+            <mxPoint x="169.99692307692308" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="17" edge="1" parent="1" source="7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" target="8" value="Relationship">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
