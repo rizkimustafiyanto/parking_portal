@@ -21,13 +21,14 @@ type Config struct {
 	DBMaxIdleConns int
 	CORSOrigins    []string
 
-	JWTSecret string
+	JWTSecret        string
 	RabbitMQURL      string
 	RabbitMQExchange string
 	RabbitMQEnabled  bool
 
 	AutoMigrate       bool
 	SeedDatabase      bool
+	SeedResetData     bool
 	SeedAdminName     string
 	SeedAdminEmail    string
 	SeedAdminPassword string
@@ -54,6 +55,7 @@ func Load() (*Config, error) {
 	viper.SetDefault("CORS_ORIGINS", []string{})
 	viper.SetDefault("AUTO_MIGRATE", true)
 	viper.SetDefault("SEED_DATABASE", false)
+	viper.SetDefault("SEED_RESET_DATA", false)
 	viper.SetDefault("SEED_ADMIN_NAME", "Administrator")
 	viper.SetDefault("SEED_ADMIN_EMAIL", "admin@example.com")
 	viper.SetDefault("SEED_ADMIN_PASSWORD", "password123")
@@ -83,6 +85,7 @@ func Load() (*Config, error) {
 		CORSOrigins:       viper.GetStringSlice("CORS_ORIGINS"),
 		AutoMigrate:       viper.GetBool("AUTO_MIGRATE"),
 		SeedDatabase:      viper.GetBool("SEED_DATABASE"),
+		SeedResetData:     viper.GetBool("SEED_RESET_DATA"),
 		SeedAdminName:     viper.GetString("SEED_ADMIN_NAME"),
 		SeedAdminEmail:    viper.GetString("SEED_ADMIN_EMAIL"),
 		SeedAdminPassword: viper.GetString("SEED_ADMIN_PASSWORD"),
